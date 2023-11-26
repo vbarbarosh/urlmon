@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('urls', function (Blueprint $table) {
             $table->id();
             $table->string('uid')->unique();
-            $table->string('name')->nullable();
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->boolean('is_debug_eval_enabled')->default(false);
-            $table->rememberToken();
+            $table->unsignedBigInteger('parser_id')->nullable();
+            $table->foreign('parser_id')->on('parsers')->references('id');
+            $table->string('url')->unique();
+            $table->json('meta')->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('urls');
     }
 };

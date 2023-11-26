@@ -1,0 +1,148 @@
+#!/usr/bin/env node
+
+const Promise = require('bluebird');
+const bytes = require('bytes');
+const cli = require('@vbarbarosh/node-helpers/src/cli');
+const fs = require('fs');
+const puppeteer = require('puppeteer');
+const puppeteer_log = require('@vbarbarosh/puppeteer-helpers/src/puppeteer_log');
+
+const started = new Date();
+
+const TERM_CLEAR = '\x1b[2J\x1b[H';
+const TERM_YELLOW = '\x1b[33m';
+const TERM_RED = '\x1b[31m';
+const TERM_GREEN = '\x1b[32m';
+const TERM_RESET = '\x1b[0m';
+
+cli(main);
+
+async function main()
+{
+    const url = process.argv[2] || 'https://news.ycombinator.com/item?id=38414914';
+    const js = process.argv[3] || `
+{
+    title: document.querySelector('.titleline > a').innerText,
+    target_url: document.querySelector('.titleline > a').href,
+    score: parseInt(document.querySelector('.score').innerText),
+    total_comments: document.querySelectorAll('.comment').length,
+    created_at: document.querySelector('.age').title,
+}
+    `;
+
+    const options = {headless: 'new'};
+    if (process.env.PROXY) {
+        // https://stackoverflow.com/a/52778119
+        options.args = [`--proxy-server=${process.env.PROXY}`];
+    }
+
+    const browser = await puppeteer.launch(options);
+    user_friendly_status('Preparing...');
+    try {
+        // const page = puppeteer_log(await browser.newPage(), s => process.stderr.write(`${s}\n`));
+        const page = await browser.newPage();
+        await page.setViewport({width: 1280, height: 1024});
+        user_friendly_status(`Opening ${url}...`);
+        let out = null;
+        for (let attempt = 1; !out && attempt < 20; ++attempt) {
+            try {
+                const meta = await url_meta(page, url, js);
+                out = {url, ...meta};
+            }
+            catch (error) {
+                process.stderr.write(render_log(`${TERM_YELLOW}Warning: ${url}: ${error.message}${TERM_RESET}`));
+                if (error.message.match(/Page load failed: 5\d\d/)) {
+                    for (let n = 1, nn = attempt*5; n <= nn; ++n) {
+                        process.stderr.write(render_log(`${TERM_YELLOW}Waiting for next attempt ${n} of ${nn}${TERM_RESET}`));
+                        await Promise.delay(1000);
+                    }
+                    continue;
+                }
+                try {
+                    const meta = await url_meta(page, url, js);
+                    out = {url, ...meta};
+                }
+                catch (error2) {
+                    process.stderr.write(render_log(`${TERM_RED}Error: ${url}: ${error2.message}${TERM_RESET}`));
+                    out = {url, error: {message: error2.message, stack: error2.stack}};
+                }
+            }
+        }
+        if (!out) {
+            throw new Error(`Too many attempts to parse ${url}`);
+        }
+        await fs.promises.writeFile('a.json', JSON.stringify(out, null, 4) + '\n');
+    }
+    finally {
+        await browser.close();
+    }
+
+    user_friendly_status('Done');
+}
+
+async function url_meta(page, url, js)
+{
+    const response = await page.goto(url, {waitUntil: 'domcontentloaded'});
+    if (response.status() >= 400) {
+        throw new Error(`Page load failed: ${response.status()} ${response.statusText()}`);
+    }
+    await page.screenshot({path: 'a.png', fullPage: true});
+    return await page.evaluate(render_js());
+    // allow the following expressions:
+    // - new Promise(resolve => setTimeout(resolve.bind(null, 1), 100))
+    // - {foo: 1}
+    // - {foo: await new Promise(resolve => setTimeout(resolve.bind(null, 1), 100))},
+    // - function () { ... }
+    // - async function () { ... }
+    function render_js() {
+        return `(async function () {
+            const out = (${js});
+            return (typeof out == 'function') ? out() : out;
+        })()`;
+    }
+}
+
+function format_ms_human(ms)
+{
+    const s = Math.floor(ms/1000 % 60);
+    const m = Math.floor(ms/1000 / 60);
+    return `0${m}:0${s}`.replace(/0(\d\d)/g, '$1');
+}
+
+function format_bytes_kb(n)
+{
+    return bytes.format(n, {thousandsSeparator: ',', decimalPlaces: n > 1024*1024*1024 ? 2 : 0});
+}
+
+function render_log(message)
+{
+    const elapsed = Date.now() - started.getTime();
+    return `[${format_ms_human(elapsed)}][${format_bytes_kb(process.memoryUsage().heapUsed).padStart(5, ' ')}] ${message}\n`;
+}
+
+// Treat /dev/fd/3 as a special file for user friendly-messages.
+// If no such file was open, then nobody cares about such messages.
+function user_friendly_status(status)
+{
+    fs.write(2, render_log(status), () => 0);
+}
+
+// async function fs_read_eof(fp)
+// {
+//     const buffers = [];
+//     while (true) {
+//         const buf = await fs_read(fp);
+//         if (buf.length == 0) {
+//             break;
+//         }
+//         buffers.push(buf);
+//     }
+//     return Buffer.concat(buffers);
+// }
+//
+// // https://stackoverflow.com/a/49418197/1478566
+// // grep_cl2gv8ema00007z8kfejvgfym
+// async function fs_read_stdin_utf8()
+// {
+//     return fs_read_eof(0).then(v => v.toString('utf8'));
+// }

@@ -1,6 +1,11 @@
 <?php
 
+use App\Http\Controllers\ParsersController;
+use App\Http\Controllers\UrlsController;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use function vbarbarosh\laravel_debug_eval;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +21,23 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::any('/debug/eval', function () {
+    user()->should_allow_debug_eval();
+    return laravel_debug_eval();
+});
+
+Route::get('/login', function () {
+    Auth::login(User::query()->firstOrFail());
+    return redirect('/');
+});
+
+Route::get('/api/v1/parsers.json', [ParsersController::class, 'list']);
+Route::get('/api/v1/parsers/{parser_uid}', [ParsersController::class, 'fetch']);
+Route::patch('/api/v1/parsers/{parser_uid}', [ParsersController::class, 'patch']);
+Route::delete('/api/v1/parsers/{parser_uid}', [ParsersController::class, 'remove']);
+
+Route::get('/api/v1/urls.json', [UrlsController::class, 'list']);
+Route::get('/api/v1/urls/{url_uid}', [UrlsController::class, 'fetch']);
+Route::patch('/api/v1/urls/{url_uid}', [UrlsController::class, 'patch']);
+Route::delete('/api/v1/urls/{url_uid}', [UrlsController::class, 'remove']);
