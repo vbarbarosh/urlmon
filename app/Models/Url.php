@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
+ * Alternative names: resources, documents
+ *
  * @property $id
  * @property $uid
  * @property $parser_id
