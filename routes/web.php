@@ -39,5 +39,7 @@ Route::delete('/api/v1/parsers/{parser_uid}', [ParsersController::class, 'remove
 
 Route::get('/api/v1/urls.json', [UrlsController::class, 'list']);
 Route::get('/api/v1/urls/{url_uid}', [UrlsController::class, 'fetch']);
+Route::post('/api/v1/urls/{url_uid}', [UrlsController::class, 'create']);
+Route::post('/api/v1/urls/{url_uid}/parse', [UrlsController::class, 'parse']);
 Route::patch('/api/v1/urls/{url_uid}', [UrlsController::class, 'patch']);
 Route::delete('/api/v1/urls/{url_uid}', [UrlsController::class, 'remove']);
