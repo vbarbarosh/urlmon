@@ -10,4 +10,10 @@ scriptname=`basename $script`
 
 cd $scriptdir/..
 
-npm run dev
+tmux \
+    new-session \; \
+    split-window -v ./artisan serve \; \
+    split-window -h npm run dev \; \
+    attach \; \
+    select-pane -D \; \
+    bind x kill-session # ctrl-b x -- to kill all three panes and exit
