@@ -11,7 +11,7 @@ class ParsersSeeder
         $parser = new Parser();
         $parser->label = 'news.ycombinator.com/item';
         $parser->match = 'https://news.ycombinator.com/item?id=\d+';
-        $parser->engine = Parser::ENGINE_PUPPETEER;
+        $parser->engine = Parser::ENGINE_PUPPETEER_META;
         $parser->config = [
             'js' => <<< EOF
 {
@@ -28,7 +28,7 @@ EOF
         $parser = new Parser();
         $parser->label = 'news.ycombinator.com/user';
         $parser->match = 'https://news.ycombinator.com/user?id=.+';
-        $parser->engine = Parser::ENGINE_PUPPETEER;
+        $parser->engine = Parser::ENGINE_PUPPETEER_META;
         $parser->config = [
             'js' => <<< EOF
 {
@@ -44,7 +44,7 @@ EOF
         $parser = new Parser();
         $parser->label = 'news.ycombinator.com/news';
         $parser->match = 'https://news.ycombinator.com(/|/news)?';
-        $parser->engine = Parser::ENGINE_PUPPETEER;
+        $parser->engine = Parser::ENGINE_PUPPETEER_META;
         $parser->config = [
             'js' => <<< EOF
 {

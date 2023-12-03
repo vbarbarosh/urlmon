@@ -29,8 +29,10 @@ class Parser extends Model
 
     const ENGINE_HTTP_STATUS = 'http_status';
     const ENGINE_HTTP_HEAD = 'http_head';
-    const ENGINE_PUPPETEER = 'puppeteer'; // puppeteer/pages puppeteer/meta
-    const ENGINE_WGET = 'wget'; // wget/pages wget/meta
+    const ENGINE_PUPPETEER_META = 'puppeteer/meta';
+    const ENGINE_PUPPETEER_PAGES = 'puppeteer/pages';
+    const ENGINE_WGET_META = 'wget/meta';
+    const ENGINE_WGET_PAGES = 'wget/pages';
 
     protected $hidden = [
         'id',
@@ -131,8 +133,8 @@ class Parser extends Model
             switch ($input['engine']) {
             case Parser::ENGINE_HTTP_STATUS:
             case Parser::ENGINE_HTTP_HEAD:
-            case Parser::ENGINE_PUPPETEER:
-            case Parser::ENGINE_WGET:
+            case Parser::ENGINE_PUPPETEER_META:
+            case Parser::ENGINE_WGET_META:
                 $this->engine = $input['engine'];
                 break;
             }
@@ -153,6 +155,39 @@ class Parser extends Model
     }
 
     public function run(Url $url)
+    {
+        switch ($this->engine) {
+        case Parser::ENGINE_HTTP_STATUS:
+            $this->run_http_status($url);
+            break;
+        case Parser::ENGINE_HTTP_HEAD:
+            $this->run_http_head($url);
+            break;
+        case Parser::ENGINE_PUPPETEER_META:
+            $this->run_puppeteer($url);
+            break;
+        }
+    }
+
+    private function run_http_status(Url $url)
+    {
+        $s = shell(['curl', '-is', $url]);
+        $s = explode("\r\n", $s)[0];
+        $s = explode("\r\n", $s)[0];
+        $s = trim($s);
+        $url->meta = $s;
+        $url->save();
+    }
+
+    private function run_http_head(Url $url)
+    {
+        $s = shell(['curl', '-isI', $url]);
+        $s = explode("\r\n", $s)[0];
+        $url->meta = $s;
+        $url->save();
+    }
+
+    private function run_puppeteer(Url $url)
     {
         tempdir(function ($d) use ($url) {
             shell([base_path('bin/url-meta'), $url->url, $this->config['js'] ?? ''], $d);
