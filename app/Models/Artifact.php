@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Exceptions\NotImplemented;
+use App\Helpers\Classes\FrontendArray;
 use App\Helpers\Traits\Cast;
 use App\Helpers\Traits\Q;
 use Carbon\Carbon;
@@ -14,13 +15,13 @@ use Illuminate\Support\Collection;
 /**
  * @property $id
  * @property $uid
- * @property $promise_id
+ * @property $target_id
  * @property $name
  * @property $url
  * @property $size
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property Promise $promise
+ * @property Target $target
  */
 class Artifact extends Model
 {
@@ -28,36 +29,38 @@ class Artifact extends Model
 
     protected $hidden = [
         'id',
-        'promise_id',
+        'target_id',
     ];
 
     static public function frontend_list($query): Collection
     {
         $artifacts = $query->get();
-        $promise_ids = $artifacts->pluck('promise_id');
-        $promises = Promise::frontend_list(Promise::query()->whereIn('id', $promise_ids))->keyBy('id');
-        return $artifacts->map(function (Artifact $artifact)  use ($promises) {
-            return [
+        $target_ids = $artifacts->pluck('target_id');
+        $targets = Target::frontend_list(Target::query()->whereIn('id', $target_ids))->keyBy('id');
+        return $artifacts->map(function (Artifact $artifact)  use ($targets) {
+            return new FrontendArray($artifact->id, [
                 'uid' => $artifact->uid,
-                'promise' => $promises[$artifact->promise_id] ?? null,
+                'target_uid' => $targets[$artifact->target_id]['uid'] ?? null,
+                'target' => $targets[$artifact->target_id] ?? null,
                 'name' => $artifact->name,
                 'url' => $artifact->url,
                 'size' => $artifact->size,
                 'created_at' => $artifact->created_at->toAtomString(),
                 'updated_at' => $artifact->updated_at->toAtomString(),
-            ];
+            ]);
         });
     }
 
     static public function frontend_fetch($query): Collection
     {
         $artifacts = $query->get();
-        $promise_ids = $artifacts->pluck('promise_id');
-        $promises = Promise::frontend_fetch(Promise::query()->whereIn('id', $promise_ids))->keyBy('id');
-        return $artifacts->map(function (Artifact $artifact)  use ($promises) {
+        $target_ids = $artifacts->pluck('target_id');
+        $targets = Promise::frontend_fetch(Promise::query()->whereIn('id', $target_ids))->keyBy('id');
+        return $artifacts->map(function (Artifact $artifact)  use ($targets) {
             return [
                 'uid' => $artifact->uid,
-                'promise' => $promises[$artifact->promise_id] ?? null,
+                'target_uid' => $targets[$artifact->target_id]['uid'] ?? 'null',
+                'target' => $targets[$artifact->target_id] ?? null,
                 'name' => $artifact->name,
                 'url' => $artifact->url,
                 'size' => $artifact->size,
@@ -75,7 +78,7 @@ class Artifact extends Model
         foreach ($items as $item) {
             $values[] = [
                 'id' => $item->id,
-                'promise_id' => $item->promise_id,
+                'target_id' => $item->target_id,
                 'uid' => $item->uid,
                 'name' => $item->name,
                 'url' => $item->url,
@@ -83,7 +86,7 @@ class Artifact extends Model
             ];
         }
 
-        Artifact::query()->upsert($values, ['id', 'uid'], ['promise_id', 'name', 'url', 'size']);
+        Artifact::query()->upsert($values, ['id', 'uid'], ['target_id', 'name', 'url', 'size']);
     }
 
     /**
@@ -93,8 +96,7 @@ class Artifact extends Model
     {
         safety_check_query_for_batch_remove($query);
 
-        return $query->pluck('parsers.id')->chunk(100)->sum(function ($ids) {
-            Url::remove(Url::query()->whereIn('parser_id', $ids));
+        return $query->pluck('artifacts.id')->chunk(100)->sum(function ($ids) {
             return Artifact::query()->whereIn('id', $ids)->delete();
         });
     }
@@ -112,9 +114,9 @@ class Artifact extends Model
         return $out;
     }
 
-    public function promise()
+    public function target()
     {
-        return $this->belongsTo(Promise::class);
+        return $this->belongsTo(Target::class);
     }
 
     public function fill_unsafe($input)

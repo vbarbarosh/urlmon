@@ -1,7 +1,7 @@
 <template>
     <div class="mg15">
-        <button-success @click="$router.push('/urls/new')">
-            Add new url
+        <button-success @click="$router.push('/targets/new')">
+            Add new target
         </button-success>
         <table class="table">
             <thead>
@@ -40,17 +40,17 @@
 </template>
 
 <script>
-    import format_date from '../helpers/format_date';
     import ButtonGroup from './button-groups/button-group.vue';
     import ButtonInfo from './buttons/button-info.vue';
     import ButtonLight from './buttons/button-light.vue';
     import ButtonPrimary from './buttons/button-primary.vue';
     import ButtonSuccess from './buttons/button-success.vue';
-    import api_urls_list from '../helpers/api/api_urls_list';
-    import api_urls_parse from '../helpers/api/api_urls_parse';
+    import api_targets_list from '../helpers/api/api_targets_list';
+    import api_targets_parse from '../helpers/api/api_targets_parse';
+    import format_date from '../helpers/format_date';
     import m_blocking from '../helpers/m_blocking';
 
-    const page_urls = {
+    const page_targets_list = {
         components: {ButtonSuccess, ButtonGroup, ButtonInfo, ButtonLight, ButtonPrimary},
         data: function () {
             return {
@@ -60,14 +60,14 @@
         methods: {
             format_date,
             refresh: async function () {
-                this.items = await api_urls_list();
+                this.items = await api_targets_list();
             },
             click_parse: m_blocking(async function (item) {
-                await api_urls_parse({url: item});
+                await api_targets_parse({target: item});
                 await this.refresh();
             }),
             click_update: async function (item) {
-                this.$router.push(`/urls/${item.uid}`);
+                this.$router.push(`/targets/${item.uid}`);
             },
         },
         created: async function () {
@@ -75,5 +75,5 @@
         },
     };
 
-    export default page_urls;
+    export default page_targets_list;
 </script>

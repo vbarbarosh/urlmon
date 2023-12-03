@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('urls', function (Blueprint $table) {
+        Schema::create('targets', function (Blueprint $table) {
             $table->id();
             $table->string('uid')->unique();
             $table->unsignedBigInteger('parser_id')->nullable();
             $table->foreign('parser_id')->on('parsers')->references('id');
-            $table->string('url')->unique();
+            $table->string('label')->index()->nullable();
+            $table->string('url')->index();
             $table->json('meta')->nullable();
             $table->timestamps();
         });
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('urls');
+        Schema::dropIfExists('targets');
     }
 };

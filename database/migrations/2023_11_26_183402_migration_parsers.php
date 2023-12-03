@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('uid')->unique();
             $table->string('engine')->index();
-            $table->string('match');
-            $table->string('label');
-            $table->json('config');
+            $table->string('match')->nullable();
+            $table->string('label')->nullable();
+            $table->json('config')->nullable();
             $table->timestamps();
         });
     }

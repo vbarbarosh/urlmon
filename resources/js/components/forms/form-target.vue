@@ -4,7 +4,7 @@
         <label :for="id_uid" class="form-label">
             uid
             <template v-if="modelValue.uid">
-                <a :href="`/api/v1/urls/${modelValue.uid}`" target="_blank" class="fs10">(api)</a>
+                <a :href="`/api/v1/targets/${modelValue.uid}`" target="_blank" class="fs10">(api)</a>
             </template>
         </label>
         <input v-model="modelValue.uid" :id="id_uid" type="text" class="form-control" disabled />
@@ -58,7 +58,7 @@
     import blocking from '../../helpers/blocking';
     import cuid2 from '../../helpers/cuid2';
 
-    const form_url = {
+    const form_target = {
         props: ['modelValue'],
         data: function () {
             return {
@@ -90,5 +90,5 @@
         },
     };
 
-    export default form_url;
+    export default form_target;
 </script>

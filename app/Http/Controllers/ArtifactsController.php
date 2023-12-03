@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Artifact;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Http\Request;
 
 class ArtifactsController extends Controller
 {
     /**
      * GET /api/v1/artifacts.json
      */
-    public function list()
+    public function list(Request $request)
     {
-        return Artifact::frontend_list(Artifact::query());
+        $q = filters($request->input(), Artifact::query(), [
+            'target' => function (EloquentBuilder $q, $value) {
+                $q->whereRaw('(artifacts.target_id = (SELECT id FROM targets WHERE targets.uid = ? LIMIT 1))', [$value]);
+            },
+        ]);
+        return Artifact::frontend_list($q);
     }
 
     /**

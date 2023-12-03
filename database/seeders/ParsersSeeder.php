@@ -9,6 +9,16 @@ class ParsersSeeder
     public function run(): void
     {
         $parser = new Parser();
+        $parser->label = 'http_status';
+        $parser->engine = Parser::ENGINE_HTTP_STATUS;
+        $parser->save();
+
+        $parser = new Parser();
+        $parser->label = 'http_head';
+        $parser->engine = Parser::ENGINE_HTTP_HEAD;
+        $parser->save();
+
+        $parser = new Parser();
         $parser->label = 'news.ycombinator.com/item';
         $parser->match = 'https://news.ycombinator.com/item?id=\d+';
         $parser->engine = Parser::ENGINE_PUPPETEER_META;

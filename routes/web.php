@@ -3,7 +3,7 @@
 use App\Http\Controllers\ArtifactsController;
 use App\Http\Controllers\ParsersController;
 use App\Http\Controllers\PromisesController;
-use App\Http\Controllers\UrlsController;
+use App\Http\Controllers\TargetsController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -40,12 +40,12 @@ Route::post('/api/v1/parsers', [ParsersController::class, 'create']);
 Route::patch('/api/v1/parsers/{parser_uid}', [ParsersController::class, 'patch']);
 Route::delete('/api/v1/parsers/{parser_uid}', [ParsersController::class, 'remove']);
 
-Route::get('/api/v1/urls.json', [UrlsController::class, 'list']);
-Route::get('/api/v1/urls/{url_uid}', [UrlsController::class, 'fetch']);
-Route::post('/api/v1/urls', [UrlsController::class, 'create']);
-Route::post('/api/v1/urls/{url_uid}/parse', [UrlsController::class, 'parse']);
-Route::patch('/api/v1/urls/{url_uid}', [UrlsController::class, 'patch']);
-Route::delete('/api/v1/urls/{url_uid}', [UrlsController::class, 'remove']);
+Route::get('/api/v1/targets.json', [TargetsController::class, 'list']);
+Route::get('/api/v1/targets/{target_uid}', [TargetsController::class, 'fetch']);
+Route::post('/api/v1/targets', [TargetsController::class, 'create']);
+Route::post('/api/v1/targets/{target_uid}/parse', [TargetsController::class, 'parse']);
+Route::patch('/api/v1/targets/{target_uid}', [TargetsController::class, 'patch']);
+Route::delete('/api/v1/targets/{target_uid}', [TargetsController::class, 'remove']);
 
 Route::get('/api/v1/promises.json', [PromisesController::class, 'list']);
 Route::get('/api/v1/promises/{promise_uid}', [PromisesController::class, 'fetch']);

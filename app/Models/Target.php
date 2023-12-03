@@ -3,16 +3,18 @@
 namespace App\Models;
 
 use App\Exceptions\UserFriendlyException;
+use App\Helpers\Classes\FrontendArray;
 use App\Helpers\Traits\Cast;
 use App\Helpers\Traits\Q;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
- * Alternative names: resources, documents, targets
+ * Alternative names: urls, resources, documents, targets
  *
  * @property $id
  * @property $uid
@@ -23,8 +25,10 @@ use Illuminate\Support\Collection;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Parser $parser
+ * @property EloquentCollection|Artifact[] $artifacts
+ * @property $artifacts_count
  */
-class Url extends Model
+class Target extends Model
 {
     use HasFactory, Cast, Q;
 
@@ -39,29 +43,44 @@ class Url extends Model
     static public function frontend_list($query): Collection
     {
         $r = ['parser'];
-        return $query->with($r)->get()->map(function (Url $url) {
-            return [
-                'uid' => $url->uid,
-                'parser_uid' => $url->parser->uid ?? null,
-                'label' => $url->label,
-                'url' => $url->url,
-                'meta' => $url->meta,
-                'created_at' => $url->created_at->toAtomString(),
-                'updated_at' => $url->updated_at->toAtomString(),
-            ];
+        $c = ['artifacts'];
+        return $query->with($r)->withCount($c)->get()->map(function (Target $target) {
+            return new FrontendArray($target->id, [
+                'uid' => $target->uid,
+                'parser_uid' => $target->parser->uid ?? null,
+                'label' => $target->label,
+                'url' => $target->url,
+                // 'meta' => $target->meta,
+                'artifacts_count' => $target->artifacts_count,
+                'created_at' => $target->created_at->toAtomString(),
+                'updated_at' => $target->updated_at->toAtomString(),
+            ]);
         });
     }
 
     static public function frontend_fetch($query): Collection
     {
-        return Url::frontend_list($query);
+        $r = ['parser'];
+        $c = ['artifacts'];
+        return $query->with($r)->withCount($c)->get()->map(function (Target $target) {
+            return new FrontendArray($target->id, [
+                'uid' => $target->uid,
+                'parser_uid' => $target->parser->uid ?? null,
+                'label' => $target->label,
+                'url' => $target->url,
+                'meta' => $target->meta,
+                'artifacts_count' => $target->artifacts_count,
+                'created_at' => $target->created_at->toAtomString(),
+                'updated_at' => $target->updated_at->toAtomString(),
+            ]);
+        });
     }
 
     static public function store($items)
     {
         $values = [];
 
-        /** @var Url $item */
+        /** @var Target $item */
         foreach ($items as $item) {
             $values[] = [
                 'id' => $item->id,
@@ -72,7 +91,7 @@ class Url extends Model
             ];
         }
 
-        Url::query()->upsert($values, ['id', 'uid'], ['parser_id', 'label', 'url']);
+        Target::query()->upsert($values, ['id', 'uid'], ['parser_id', 'label', 'url']);
     }
 
     /**
@@ -82,15 +101,16 @@ class Url extends Model
     {
         safety_check_query_for_batch_remove($query);
 
-        return $query->pluck('urls.id')->chunk(100)->sum(function ($ids) {
-            return Url::query()->whereIn('id', $ids)->delete();
+        return $query->pluck('targets.id')->chunk(100)->sum(function ($ids) {
+            Artifact::remove(Artifact::query()->whereIn('target_id', $ids));
+            return Target::query()->whereIn('id', $ids)->delete();
         });
     }
 
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->uid = uid_url();
+        $this->uid = uid_target();
         $this->parser_id = 1;
         $this->url = 'https://example.com/' . $this->uid;
     }
@@ -98,8 +118,18 @@ class Url extends Model
     public function replicate(array $except = null): self
     {
         $out = parent::replicate($except);
-        $out->uid = uid_url();
+        $out->uid = uid_target();
         return $out;
+    }
+
+    public function parser()
+    {
+        return $this->belongsTo(Parser::class);
+    }
+
+    public function artifacts()
+    {
+        return $this->hasMany(Artifact::class);
     }
 
     public function fill_unsafe($input)
@@ -118,11 +148,6 @@ class Url extends Model
         if (isset($input['url'])) {
             $this->url = trim($input['url']);
         }
-    }
-
-    public function parser()
-    {
-        return $this->belongsTo(Parser::class);
     }
 
     public function parse()

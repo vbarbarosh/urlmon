@@ -20,8 +20,8 @@ use Illuminate\Support\Collection;
  * @property $config
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property EloquentCollection|Url[] $urls
- * @property $urls_count
+ * @property EloquentCollection|Target[] $targets
+ * @property $targets_count
  */
 class Parser extends Model
 {
@@ -44,7 +44,7 @@ class Parser extends Model
 
     static public function frontend_list($query): Collection
     {
-        $c = ['urls'];
+        $c = ['targets'];
         return $query->withCount($c)->get()->map(function (Parser $parser) {
             return [
                 'uid' => $parser->uid,
@@ -52,7 +52,7 @@ class Parser extends Model
                 'engine' => $parser->engine,
                 // 'match' => $parser->match,
                 // 'config' => $parser->config,
-                'total_urls' => $parser->urls_count,
+                'targets_count' => $parser->targets_count,
                 'created_at' => $parser->created_at->toAtomString(),
                 'updated_at' => $parser->updated_at->toAtomString(),
             ];
@@ -61,7 +61,7 @@ class Parser extends Model
 
     static public function frontend_fetch($query): Collection
     {
-        $c = ['urls'];
+        $c = ['targets'];
         return $query->withCount($c)->get()->map(function (Parser $parser) {
             return [
                 'uid' => $parser->uid,
@@ -69,7 +69,7 @@ class Parser extends Model
                 'engine' => $parser->engine,
                 'match' => $parser->match,
                 'config' => json_encode($parser->config),
-                'total_urls' => $parser->urls_count,
+                'targets_count' => $parser->targets_count,
                 'created_at' => $parser->created_at->toAtomString(),
                 'updated_at' => $parser->updated_at->toAtomString(),
             ];
@@ -103,7 +103,7 @@ class Parser extends Model
         safety_check_query_for_batch_remove($query);
 
         return $query->pluck('parsers.id')->chunk(100)->sum(function ($ids) {
-            Url::remove(Url::query()->whereIn('parser_id', $ids));
+            Target::remove(Target::query()->whereIn('parser_id', $ids));
             return Parser::query()->whereIn('id', $ids)->delete();
         });
     }
@@ -151,12 +151,12 @@ class Parser extends Model
         }
     }
 
-    public function urls()
+    public function targets()
     {
-        return $this->hasMany(Url::class);
+        return $this->hasMany(Target::class);
     }
 
-    public function run(Url $url)
+    public function run(Target $url)
     {
         switch ($this->engine) {
         case Parser::ENGINE_HTTP_STATUS:
@@ -171,59 +171,47 @@ class Parser extends Model
         }
     }
 
-    private function run_http_status(Url $url)
+    private function run_http_status(Target $target)
     {
-        $s = shell(['curl', '-is', $url->url]);
+        $s = shell(['curl', '-is', $target->url]);
         $s = explode("\r\n", $s)[0];
         $s = explode("\r\n", $s)[0];
         $s = trim($s);
-        $url->meta = $s;
-        $url->save();
-        $this->create_dummy_artifacts($url);
+        $target->meta = $s;
+        $target->save();
+        $this->create_dummy_artifacts($target);
     }
 
-    private function run_http_head(Url $url)
+    private function run_http_head(Target $target)
     {
-        $s = shell(['curl', '-isI', $url->url]);
+        $s = shell(['curl', '-isI', $target->url]);
         $s = explode("\r\n\r\n", $s)[0];
-        $url->meta = $s;
-        $url->save();
-        $this->create_dummy_artifacts($url);
+        $target->meta = $s;
+        $target->save();
+        $this->create_dummy_artifacts($target);
     }
 
-    private function run_puppeteer(Url $url)
+    private function run_puppeteer(Target $target)
     {
-        tempdir(function ($d) use ($url) {
-            shell([base_path('bin/url-meta'), $url->url, $this->config['js'] ?? ''], $d);
-            $url->meta = json_decode(file_get_contents("$d/a.json"), true);
-            $url->save();
-            $this->create_dummy_artifacts($url);
+        tempdir(function ($d) use ($target) {
+            shell([base_path('bin/url-meta'), $target->url, $this->config['js'] ?? ''], $d);
+            $target->meta = json_decode(file_get_contents("$d/a.json"), true);
+            $target->save();
+            $this->create_dummy_artifacts($target);
         });
     }
 
-    private function create_dummy_artifacts(Url $url): void
+    private function create_dummy_artifacts(Target $target): void
     {
-        $promise = new Promise();
-        $promise->status = Promise::STATUS_FULFILLED;
-        $promise->subject = Promise::SUBJECT_PARSE;
-        $promise->user_friendly_status = 'Done';
-        $promise->request = [
-            'parser' => [
-                'uid' => $this->uid,
-                'engine' => $this->engine,
-                'config' => $this->config,
-            ],
-            'url'=> $url->url,
-        ];
-        $promise->save();
+        Artifact::remove($target->artifacts());
         $artifact = new Artifact();
-        $artifact->promise_id = $promise->id;
+        $artifact->target_id = $target->id;
         $artifact->name = 'db.csv';
         $artifact->url = 'https://example.com/' . $artifact->uid . '/db.csv';
         $artifact->size = random_int(1000, 1000000);
         $artifact->save();
         $artifact = new Artifact();
-        $artifact->promise_id = $promise->id;
+        $artifact->target_id = $target->id;
         $artifact->name = 'logs.txt';
         $artifact->url = 'https://example.com/' . $artifact->uid . '/logs.txt';
         $artifact->size = random_int(1000, 1000000);

@@ -1,38 +1,37 @@
 <template>
     <form v-on:submit.prevent="submit">
-        <form-url v-model="url" />
+        <form-target v-model="target" />
         <button-group-right>
             <button-warning @click="$router.back()">Cancel</button-warning>
-            <button-success type="submit">Add new url</button-success>
+            <button-success type="submit">Add new target</button-success>
         </button-group-right>
     </form>
 </template>
 
 <script>
-    import api_urls_create from '../helpers/api/api_urls_create';
+    import api_targets_create from '../helpers/api/api_targets_create';
     import blocking from '../helpers/blocking';
     import ButtonGroupRight from './button-groups/button-group-right.vue';
     import ButtonSuccess from './buttons/button-success.vue';
     import ButtonWarning from './buttons/button-warning.vue';
-    import FormUrl from './forms/form-url.vue';
+    import FormTarget from './forms/form-target.vue';
 
-    const page_urls_new = {
+    const page_targets_new = {
         components: {
-            ButtonSuccess, ButtonWarning, ButtonGroupRight,
-            FormUrl,
+            ButtonSuccess, ButtonWarning, ButtonGroupRight, FormTarget,
         },
         data: function () {
             return {
-                url: {},
+                target: {},
             };
         },
         methods: {
             submit: async function () {
-                await blocking(api_urls_create({url: this.url}));
-                this.$router.replace('/urls');
+                await blocking(api_targets_create({target: this.target}));
+                this.$router.replace('/targets');
             },
         }
     };
 
-    export default page_urls_new;
+    export default page_targets_new;
 </script>

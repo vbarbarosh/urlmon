@@ -23,7 +23,7 @@ class FrontendArray implements Arrayable, ArrayAccess, JsonSerializable
 
     public function __isset($key)
     {
-        if ($key == 'id') {
+        if ($key === 'id') {
             return isset($this->_id);
         }
         return isset($this->_attributes[$key]);
@@ -49,7 +49,7 @@ class FrontendArray implements Arrayable, ArrayAccess, JsonSerializable
 
     public function offsetExists($offset): bool
     {
-        return ($offset === 'id') || in_array($offset, $this->_attributes);
+        return ($offset === 'id') || isset($this->_attributes[$offset]);
     }
 
     public function offsetGet($offset)

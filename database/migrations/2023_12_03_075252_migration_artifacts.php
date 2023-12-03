@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('artifacts', function (Blueprint $table) {
             $table->id();
             $table->string('uid')->unique();
-            $table->unsignedBigInteger('promise_id')->nullable();
-            $table->foreign('promise_id')->on('promises')->references('id');
+            $table->unsignedBigInteger('target_id')->nullable();
+            $table->foreign('target_id')->on('targets')->references('id');
             $table->string('name')->index();
             $table->string('url');
             $table->integer('size');

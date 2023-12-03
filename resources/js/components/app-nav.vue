@@ -14,7 +14,7 @@
                         <router-link to="/parsers" class="nav-link">Parsers</router-link>
                     </li>
                     <li class="nav-item">
-                        <router-link to="/urls" class="nav-link">Urls</router-link>
+                        <router-link to="/targets" class="nav-link">Targets</router-link>
                     </li>
                     <li class="nav-item">
                         <router-link to="/about" class="nav-link">About</router-link>
