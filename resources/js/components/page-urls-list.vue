@@ -7,27 +7,27 @@
             <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">label + url</th>
-                <th scope="col">updated</th>
+                <th scope="col">Label + URL</th>
+                <th scope="col">Updated</th>
                 <th scope="col" />
             </tr>
             </thead>
             <tbody>
             <tr v-for="item in items" v-bind:key="item.uid">
-                <th scope="row">1</th>
+                <th class="w0 nowrap" scope="row">1</th>
                 <td>
                     <template v-if="item.label">
-                        <div>{{ item.label }}</div>
+                        <div class="ww">{{ item.label }}</div>
                         <div class="fs10 fw3"><a v-bind:href="item.url" target="_blank">{{ item.url }}</a></div>
                     </template>
                     <template    v-else>
                         <div><a v-bind:href="item.url" target="_blank">{{ item.url }}</a></div>
                     </template>
                 </td>
-                <td v-bind:title="item.updated_at">
+                <td class="w0 nowrap" v-bind:title="item.updated_at">
                     {{ format_date(item.updated_at) }}
                 </td>
-                <td>
+                <td class="w0 nowrap">
                     <button-group>
                         <button-info v-on:click="click_parse(item)">Parse</button-info>
                         <button-primary v-on:click="click_update(item)">Update</button-primary>

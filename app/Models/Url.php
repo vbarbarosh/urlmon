@@ -42,7 +42,7 @@ class Url extends Model
         return $query->with($r)->get()->map(function (Url $url) {
             return [
                 'uid' => $url->uid,
-                'parser_uid' => $url->parser->uid,
+                'parser_uid' => $url->parser->uid ?? null,
                 'label' => $url->label,
                 'url' => $url->url,
                 'meta' => $url->meta,

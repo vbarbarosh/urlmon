@@ -22,9 +22,11 @@
                     </router-link>
                 </td>
                 <td>
-                    <badge-secondary v-if="item.total_urls">
-                        {{ item.total_urls }}
-                    </badge-secondary>
+                    <router-link v-if="item.total_urls" :to="`/urls?parser=${item.uid}`">
+                        <badge-secondary>
+                            {{ item.total_urls }}
+                        </badge-secondary>
+                    </router-link>
                 </td>
                 <td v-bind:title="item.updated_at">
                     {{ format_date(item.updated_at) }}

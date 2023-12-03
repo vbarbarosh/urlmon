@@ -1,7 +1,12 @@
 <template>
 
     <div class="mb-3">
-        <label :for="id_uid" class="form-label">uid</label>
+        <label :for="id_uid" class="form-label">
+            uid
+            <template v-if="modelValue.uid">
+                <a :href="`/api/v1/urls/${modelValue.uid}`" target="_blank" class="fs10">(api)</a>
+            </template>
+        </label>
         <input v-model="modelValue.uid" :id="id_uid" type="text" class="form-control" disabled />
     </div>
 

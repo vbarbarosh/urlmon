@@ -103,7 +103,7 @@ class Parser extends Model
         safety_check_query_for_batch_remove($query);
 
         return $query->pluck('parsers.id')->chunk(100)->sum(function ($ids) {
-            Url::query()->whereIn('parser_id', $ids)->update(['parser_id' => null]);
+            Url::remove(Url::query()->whereIn('parser_id', $ids));
             return Parser::query()->whereIn('id', $ids)->delete();
         });
     }
