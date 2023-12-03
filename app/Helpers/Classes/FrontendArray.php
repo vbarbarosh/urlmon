@@ -12,29 +12,23 @@ use JsonSerializable;
  */
 class FrontendArray implements Arrayable, ArrayAccess, JsonSerializable
 {
-    private $_id;
+    private $_ids;
     private $_attributes;
 
-    public function __construct($id, $attributes)
+    public function __construct($ids, $attributes)
     {
-        $this->_id = $id;
+        $this->_ids = is_array($ids) ? $ids : ['id' => $ids];
         $this->_attributes = $attributes;
     }
 
     public function __isset($key)
     {
-        if ($key === 'id') {
-            return isset($this->_id);
-        }
-        return isset($this->_attributes[$key]);
+        return isset($this->_ids[$key]) || isset($this->_attributes[$key]);
     }
 
     public function __get($key)
     {
-        if ($key == 'id') {
-            return $this->_id;
-        }
-        return $this->_attributes[$key];
+        return $this->_ids[$key] ?? $this->_attributes[$key];
     }
 
     public function toArray(): array
@@ -49,15 +43,12 @@ class FrontendArray implements Arrayable, ArrayAccess, JsonSerializable
 
     public function offsetExists($offset): bool
     {
-        return ($offset === 'id') || isset($this->_attributes[$offset]);
+        return isset($this->_ids[$offset]) || isset($this->_attributes[$offset]);
     }
 
     public function offsetGet($offset)
     {
-        if ($offset === 'id') {
-            return $this->_id;
-        }
-        return $this->_attributes[$offset] ?? null;
+        return $this->_ids[$offset] ?? $this->_attributes[$offset] ?? null;
     }
 
     /**

@@ -36,12 +36,12 @@ class Artifact extends Model
     {
         $artifacts = $query->get();
         $target_ids = $artifacts->pluck('target_id');
-        $targets = Target::frontend_list(Target::query()->whereIn('id', $target_ids))->keyBy('id');
+        $targets = Target::frontend_list(Target::query()->whereIn('targets.id', $target_ids))->keyBy('id');
         return $artifacts->map(function (Artifact $artifact)  use ($targets) {
-            return new FrontendArray($artifact->id, [
+            $ids = ['id' => $artifact->id, 'target_id' => $artifact->target_id];
+            return new FrontendArray($ids, [
                 'uid' => $artifact->uid,
                 'target_uid' => $targets[$artifact->target_id]['uid'] ?? null,
-                'target' => $targets[$artifact->target_id] ?? null,
                 'name' => $artifact->name,
                 'url' => $artifact->url,
                 'size' => $artifact->size,
@@ -55,18 +55,19 @@ class Artifact extends Model
     {
         $artifacts = $query->get();
         $target_ids = $artifacts->pluck('target_id');
-        $targets = Promise::frontend_fetch(Promise::query()->whereIn('id', $target_ids))->keyBy('id');
+        $targets = Target::frontend_list(Target::query()->whereIn('targets.id', $target_ids))->keyBy('id');
         return $artifacts->map(function (Artifact $artifact)  use ($targets) {
-            return [
+            $ids = ['id' => $artifact->id, 'target_id' => $artifact->target_id];
+            return new FrontendArray($ids, [
                 'uid' => $artifact->uid,
-                'target_uid' => $targets[$artifact->target_id]['uid'] ?? 'null',
+                'target_uid' => $targets[$artifact->target_id]['uid'] ?? null,
                 'target' => $targets[$artifact->target_id] ?? null,
                 'name' => $artifact->name,
                 'url' => $artifact->url,
                 'size' => $artifact->size,
                 'created_at' => $artifact->created_at->toAtomString(),
                 'updated_at' => $artifact->updated_at->toAtomString(),
-            ];
+            ]);
         });
     }
 

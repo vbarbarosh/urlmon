@@ -62,7 +62,9 @@ class Target extends Model
     {
         $r = ['parser'];
         $c = ['artifacts'];
-        return $query->with($r)->withCount($c)->get()->map(function (Target $target) {
+        $targets = $query->with($r)->withCount($c)->get();
+        $artifacts = Artifact::frontend_fetch(Artifact::query()->whereIn('target_id', $targets->pluck('id')))->keyBy('id');
+        return $targets->map(function (Target $target) use ($artifacts) {
             return new FrontendArray($target->id, [
                 'uid' => $target->uid,
                 'parser_uid' => $target->parser->uid ?? null,
@@ -70,6 +72,7 @@ class Target extends Model
                 'url' => $target->url,
                 'meta' => $target->meta,
                 'artifacts_count' => $target->artifacts_count,
+                'artifacts' => $artifacts->where('target_id', $target->id)->values(),
                 'created_at' => $target->created_at->toAtomString(),
                 'updated_at' => $target->updated_at->toAtomString(),
             ]);

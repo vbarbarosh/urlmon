@@ -1,5 +1,5 @@
 <template>
-    <form v-if="(target && artifacts)" v-on:submit.prevent="submit">
+    <form v-if="target" v-on:submit.prevent="submit">
         <form-target v-model="target" />
         <button-group-right>
             <button-danger v-on:click="click_delete">Delete</button-danger>
@@ -12,7 +12,7 @@
         <br>
         <hr>
         <br>
-        <pre>{{ artifacts }}</pre>
+        <pre>{{ target.artifacts }}</pre>
     </form>
 </template>
 
@@ -24,7 +24,6 @@
     import ButtonSuccess from './buttons/button-success.vue';
     import ButtonWarning from './buttons/button-warning.vue';
     import FormTarget from './forms/form-target.vue';
-    import api_artifacts_list from '../helpers/api/api_artifacts_list';
     import api_targets_fetch from '../helpers/api/api_targets_fetch';
     import api_targets_parse from '../helpers/api/api_targets_parse';
     import api_targets_patch from '../helpers/api/api_targets_patch';
@@ -36,15 +35,11 @@
         data: function () {
             return {
                 target: null,
-                artifacts: null,
             };
         },
         methods: {
             refresh: async function () {
-                [this.target, this.artifacts] = await Promise.all([
-                    api_targets_fetch({target_uid: this.$route.params.target_uid}),
-                    api_artifacts_list({target: this.$route.params.target_uid}),
-                ]);
+                this.target = api_targets_fetch({target_uid: this.$route.params.target_uid});
             },
             submit: async function () {
                 await blocking(api_targets_patch({target: this.target}));
