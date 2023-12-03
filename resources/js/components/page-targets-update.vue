@@ -1,22 +1,33 @@
 <template>
-    <form v-if="target" v-on:submit.prevent="submit">
-        <form-target v-model="target" />
-        <button-group-right>
-            <button-danger v-on:click="click_delete">Delete</button-danger>
-            <span class="mla" />
-            <button-info @click="click_parse" class="ph25">Parse</button-info>
-            <span class="ml25"></span>
-            <button-warning @click="$router.back()">Cancel</button-warning>
-            <button-primary type="submit">Update</button-primary>
-        </button-group-right>
-        <br>
-        <hr>
-        <br>
-        <pre>{{ target.artifacts }}</pre>
+    <form v-if="target" v-on:submit.prevent="submit" class="hsplit mi15">
+        <div class="fluid">
+            <form-target v-model="target" />
+            <button-group-right>
+                <button-danger v-on:click="click_delete">Delete</button-danger>
+                <span class="mla" />
+                <button-info @click="click_parse" class="ph25">Parse</button-info>
+                <span class="ml25"></span>
+                <button-warning @click="$router.back()">Cancel</button-warning>
+                <button-primary type="submit">Update</button-primary>
+            </button-group-right>
+        </div>
+        <div class="mg15">
+            <div class="sticky-t">
+                <div v-for="item in target.artifacts" v-bind:key="item.uid">
+                    <a :href="item.url" target="_blank">
+                        <figure class="figure">
+                            <img src="https://place-hold.it/100x100" class="figure-img img-fluid rounded max-w100 max-h100" alt="...">
+                            <figcaption class="figure-caption">{{ item.name }} <small class="fs8">{{ format_size(item.size) }}</small></figcaption>
+                        </figure>
+                    </a>
+                </div>
+            </div>
+        </div>
     </form>
 </template>
 
 <script>
+    import format_size from '../helpers/format_size';
     import ButtonDanger from './buttons/button-danger.vue';
     import ButtonGroupRight from './button-groups/button-group-right.vue';
     import ButtonInfo from './buttons/button-info.vue';
@@ -38,6 +49,7 @@
             };
         },
         methods: {
+            format_size,
             refresh: async function () {
                 this.target = await api_targets_fetch({target_uid: this.$route.params.target_uid});
             },
