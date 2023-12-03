@@ -19,9 +19,11 @@
                 <td>
                     <router-link :to="`/parsers/${item.uid}`">{{ item.label }}</router-link>
                 </td>
-                <td>{{ item.total_urls }}</td>
+                <td>
+                    <badge-secondary>{{ item.total_urls }}</badge-secondary>
+                </td>
                 <td v-bind:title="item.updated_at">
-                    {{ item.updated_at}}
+                    {{ format_date(item.updated_at) }}
                 </td>
                 <td>
                     <button-group>
@@ -35,13 +37,16 @@
 </template>
 
 <script>
-    import api_parsers_list from '../helpers/api/api_parsers_list';
+    import BadgeSecondary from './badges/badge-secondary.vue';
     import ButtonGroup from './button-groups/button-group.vue';
     import ButtonPrimary from './buttons/button-primary.vue';
     import ButtonSuccess from './buttons/button-success.vue';
+    import api_parsers_list from '../helpers/api/api_parsers_list';
+    import format_date from '../helpers/format_date';
 
     const page_parsers = {
-        components: {ButtonSuccess, ButtonPrimary, ButtonGroup},
+        methods: {format_date},
+        components: {BadgeSecondary, ButtonSuccess, ButtonPrimary, ButtonGroup},
         data: function () {
             return {
                 items: null,
