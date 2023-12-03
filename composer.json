@@ -6,12 +6,14 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "aws/aws-sdk-php": "^3.293",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "vbarbarosh/laravel-debug-eval": "^1.5",
-        "visus/cuid2": "^4.0"
+        "visus/cuid2": "^4.0",
+        "ext-iconv": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -27,6 +29,8 @@
             "app/Helpers/auth.php",
             "app/Helpers/db.php",
             "app/Helpers/fs.php",
+            "app/Helpers/mime.php",
+            "app/Helpers/s3.php",
             "app/Helpers/shell.php",
             "app/Helpers/uid.php"
         ],
