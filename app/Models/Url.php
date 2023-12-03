@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
- * Alternative names: resources, documents
+ * Alternative names: resources, documents, targets
  *
  * @property $id
  * @property $uid
