@@ -7,10 +7,10 @@
 
     <div class="mb-3">
         <label :for="id_parser" class="form-label">Parser</label>
-        <select v-model="modelValue.parser" :id="id_parser" class="form-select">
+        <select v-model="modelValue.parser_uid" :id="id_parser" class="form-select">
             <option disabled>Open this select menu</option>
             <template v-for="item in parsers || []" v-bind:key="item.uid">
-                <option v-bind:value="item">{{ item.label }}</option>
+                <option v-bind:value="item.uid">{{ item.label }}</option>
             </template>
         </select>
     </div>
