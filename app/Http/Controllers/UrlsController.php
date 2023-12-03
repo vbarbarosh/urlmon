@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\NotImplemented;
 use App\Models\Url;
 use Illuminate\Http\Request;
 
@@ -24,7 +23,7 @@ class UrlsController extends Controller
     {
         /** @var Url $url */
         $url = Url::query()->where('urls.uid', $url_uid)->firstOrFail();
-        return Url::frontend_list(Url::query()->where('id', $url->id))->first();
+        return Url::frontend_list($url->q())->first();
     }
 
     /**
@@ -32,7 +31,10 @@ class UrlsController extends Controller
      */
     public function create(Request $request)
     {
-        throw new NotImplemented();
+        $url = new Url();
+        $url->fill_unsafe($request->input('url'));
+        Url::store([$url]);
+        return Url::frontend_fetch($url->q());
     }
 
     /**
@@ -52,7 +54,7 @@ class UrlsController extends Controller
     {
         /** @var Url $url */
         $url = Url::query()->where('urls.uid', $url_uid)->firstOrFail();
-        return Url::frontend_list(Url::query()->where('id', $url->id))->first();
+        return Url::frontend_list($url->q())->first();
     }
 
     /**
@@ -62,6 +64,6 @@ class UrlsController extends Controller
     {
         /** @var Url $url */
         $url = Url::query()->where('urls.uid', $url_uid)->firstOrFail();
-        return Url::remove(Url::query()->where('id', $url->id));
+        return Url::remove($url->q());
     }
 }

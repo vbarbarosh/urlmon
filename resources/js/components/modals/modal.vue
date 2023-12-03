@@ -6,6 +6,22 @@
     import Promise from 'bluebird';
     import jQuery from 'jquery';
 
+    const __anim_speed__ = 'fast';
+    const animations = {
+        show(inst) {
+            return new Promise(resolve => jQuery(inst.$el).stop().fadeIn(__anim_speed__, resolve));
+        },
+        show_mounted(inst) {
+            return new Promise(resolve => jQuery(inst.$el).hide().fadeIn(__anim_speed__, resolve));
+        },
+        hide(inst) {
+            return new Promise(resolve => jQuery(inst.$el).stop().fadeOut(__anim_speed__, resolve));
+        },
+        hide_return(inst) {
+            return new Promise(resolve => jQuery(inst.$el).stop().fadeOut(__anim_speed__, resolve));
+        }
+    };
+
     const modal = {
         props: ['is', 'value', 'vm'],
         provide: function () {
@@ -29,26 +45,26 @@
         },
         methods: {
             hide: function () {
-                if (promise_hidden) {
+                if (this.xxx.promise_hidden) {
                     return this;
                 }
                 this.xxx.promise_shown = null;
-                this.xxx.promise_hidden = new Promise(resolve => jQuery(this.$el).stop().fadeOut('fast', resolve));
+                this.xxx.promise_hidden = animations.hide(this);
                 return this;
             },
             show: function () {
-                if (promise_shown) {
+                if (this.xxx.promise_shown) {
                     return this;
                 }
-                this.xxx.promise_shown = new Promise(resolve => jQuery(this.$el).stop().fadeIn('fast', resolve));
+                this.xxx.promise_shown = animations.show(this);
                 this.xxx.promise_hidden = null;
                 return this;
             },
             show_if_pending: function () {
-                return promise_resolve ? this.show() : undefined;
+                return this.xxx.promise_resolve ? this.show() : undefined;
             },
             end: function (retval) {
-                if (!promise_resolve) {
+                if (!this.xxx.promise_resolve) {
                     // XXX Simulate old behavior when `end` fn was able to call several times
                     return;
                 }
@@ -61,7 +77,7 @@
                 this.xxx.promise_resolve = null;
                 // `this.$destroy` cannot be called without this
                 // Uncaught TypeError: Cannot read property 'beforeDestroy' of undefined
-                jQuery(this.$el).fadeOut('fast', () => this.vm.unmount());
+                animations.hide_return(this).then(() => this.vm.unmount());
                 return this;
             },
             promise: function () {
@@ -72,13 +88,16 @@
             },
         },
         mounted: function () {
+            jQuery(this.$el).hide();
             // Case when component calls `this.modal.hide()` from its `created` method.
             if (this.xxx.promise_hidden) {
                 jQuery(this.$el).hide();
                 return;
             }
             try { document.activeElement.blur(); } catch (error) {}
-            jQuery(this.$el).hide().fadeIn('fast', () => autofocus(this.$el));
+            this.$nextTick(function () {
+                animations.show_mounted(this).then(() => autofocus(this.$el));
+            });
         },
         beforeUnmount: function () {
             this.$el.parentElement.remove();

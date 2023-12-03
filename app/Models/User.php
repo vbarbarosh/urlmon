@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Exceptions\NotAuthorized;
 use App\Exceptions\UserFriendlyException;
 use App\Helpers\Traits\Cast;
+use App\Helpers\Traits\Q;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,7 +29,7 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, Cast;
+    use HasApiTokens, HasFactory, Notifiable, Cast, Q;
 
     /**
      * The attributes that are mass assignable.

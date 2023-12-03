@@ -1,17 +1,16 @@
 <template>
-    <div>
-        <ul>
-            <li><router-link to="/">home</router-link></li>
-            <li><router-link to="/parsers">parsers</router-link></li>
-            <li><router-link to="/urls">urls</router-link></li>
-            <li><router-link to="/about">about</router-link></li>
-        </ul>
+    <app-nav />
+    <br>
+    <div class="container">
         <router-view />
     </div>
 </template>
 
 <script>
+    import AppNav from './app-nav.vue';
+
     const app = {
+        components: {AppNav},
     };
 
     export default app;

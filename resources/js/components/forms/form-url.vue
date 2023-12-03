@@ -1,0 +1,75 @@
+<template>
+
+    <div class="mb-3">
+        <label :for="id_uid" class="form-label">uid</label>
+        <input v-model="modelValue.uid" :id="id_uid" type="text" class="form-control" disabled />
+    </div>
+
+    <div class="mb-3">
+        <label :for="id_parser" class="form-label">Parser</label>
+        <select v-model="modelValue.parser" :id="id_parser" class="form-select">
+            <option disabled>Open this select menu</option>
+            <template v-for="item in parsers || []" v-bind:key="item.uid">
+                <option v-bind:value="item">{{ item.label }}</option>
+            </template>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label :for="id_url " class="form-label">Url</label>
+        <input v-model="modelValue.url" :id="id_url" type="text" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label :for="id_meta" class="form-label">Meta</label>
+        <textarea ref="textarea" :id="id_meta" disabled class="form-control font-monospace" rows="3">{{ modelValue.meta }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label :for="id_created" class="form-label">Created</label>
+        <input v-model="modelValue.created_at" :id="id_created" disabled class="form-control font-monospace" />
+    </div>
+
+    <div class="mb-3">
+        <label :for="id_updated" class="form-label">Updated</label>
+        <input v-model="modelValue.updated_at" :id="id_updated" disabled class="form-control font-monospace" />
+    </div>
+
+</template>
+
+<script>
+    import autosize from 'autosize/dist/autosize';
+    import api_parsers_list from '../../helpers/api/api_parsers_list';
+    import blocking from '../../helpers/blocking';
+    import cuid2 from '../../helpers/cuid2';
+
+    const form_url = {
+        props: ['modelValue'],
+        data: function () {
+            return {
+                id_uid: cuid2(),
+                id_parser: cuid2(),
+                id_url: cuid2(),
+                id_meta: cuid2(),
+                id_created: cuid2(),
+                id_updated: cuid2(),
+                parsers: null,
+            };
+        },
+        watch: {
+            'modalValue.meta': function () {
+                this.$nextTick(function () {
+                    autosize.update(this.$refs.textarea);
+                });
+            },
+        },
+        created: async function () {
+            this.parsers = await blocking(api_parsers_list());
+        },
+        mounted: function () {
+            autosize(this.$refs.textarea);
+        },
+    };
+
+    export default form_url;
+</script>

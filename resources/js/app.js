@@ -2,11 +2,17 @@ import './bootstrap';
 
 import { createApp } from 'vue';
 import App from './components/app.vue';
+import modal_error from './helpers/modal/modal_error';
 import {history} from './router';
 import {router} from './router';
 
 const vm = createApp(App);
 
+vm.config.errorHandler = function (error, ...other) {
+    console.log('errorHandler', error);
+    modal_error(error);
+    console.log(other);
+};
 vm.use(router);
 vm.mount('#app');
 

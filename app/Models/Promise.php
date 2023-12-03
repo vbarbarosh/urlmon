@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Helpers\Traits\Cast;
+use App\Helpers\Traits\Q;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Promise extends Model
 {
-    use HasFactory;
+    use HasFactory, Cast, Q;
 
     const STATUS_PENDING = 'pending';
     const STATUS_REJECTED = 'rejected';

@@ -1,5 +1,5 @@
 import Promise from 'bluebird';
-import cuid from 'cuid';
+import cuid2 from './cuid2';
 import modal_loading from './modal/modal_loading';
 
 let blocking_counter = 0;
@@ -28,7 +28,7 @@ function blocking(fn_or_promise)
         }
     }
     function status_begin(message) {
-        status_uid = cuid();
+        status_uid = cuid2();
         blocking_modal.value.push({uid: status_uid, message});
     }
     function status_end() {

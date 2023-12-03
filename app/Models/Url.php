@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Exceptions\UserFriendlyException;
+use App\Helpers\Traits\Cast;
+use App\Helpers\Traits\Q;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,7 +25,7 @@ use Illuminate\Support\Collection;
  */
 class Url extends Model
 {
-    use HasFactory;
+    use HasFactory, Cast, Q;
 
     protected $hidden = [
         'id',
@@ -34,15 +37,39 @@ class Url extends Model
 
     static public function frontend_list($query): Collection
     {
-        return $query->get()->map(function (Url $url) {
+        $r = ['parser'];
+        return $query->with($r)->get()->map(function (Url $url) {
             return [
                 'uid' => $url->uid,
+                'parser_uid' => $url->parser->uid,
                 'url' => $url->url,
                 'meta' => $url->meta,
                 'created_at' => $url->created_at->toAtomString(),
                 'updated_at' => $url->updated_at->toAtomString(),
             ];
         });
+    }
+
+    static public function frontend_fetch($query): Collection
+    {
+        return Url::frontend_list($query);
+    }
+
+    static public function store($items)
+    {
+        $values = [];
+
+        /** @var Url $item */
+        foreach ($items as $item) {
+            $values[] = [
+                'id' => $item->id,
+                'uid' => $item->uid,
+                'parser_id' => $item->parser_id,
+                'url' => $item->url,
+            ];
+        }
+
+        Url::query()->upsert($values, ['id', 'uid'], ['parser_id', 'url']);
     }
 
     /**
@@ -61,6 +88,8 @@ class Url extends Model
     {
         parent::__construct($attributes);
         $this->uid = uid_url();
+        $this->parser_id = 1;
+        $this->url = 'https://example.com/' . $this->uid;
     }
 
     public function replicate(array $except = null): self
@@ -68,6 +97,21 @@ class Url extends Model
         $out = parent::replicate($except);
         $out->uid = uid_url();
         return $out;
+    }
+
+    public function fill_unsafe($input)
+    {
+        if (isset($input['parser_uid'])) {
+            /** @var Parser $parser */
+            $parser = Parser::query()->where('uid', $input['parser_uid'])->first();
+            if (!$parser) {
+                throw new UserFriendlyException("Parser not found: {$input['parser_uid']}");
+            }
+            $this->parser_id = $parser->id;
+        }
+        if (isset($input['url'])) {
+            $this->url = trim($input['url']);
+        }
     }
 
     public function parser()

@@ -22,11 +22,29 @@ class ParsersController extends Controller
     {
         /** @var Parser $parser */
         $parser = Parser::query()->where('parsers.uid', $parser_uid)->firstOrFail();
-        return Parser::frontend_fetch(Parser::query()->where('id', $parser->id))->first();
+        return Parser::frontend_fetch($parser->q())->first();
     }
 
+    /**
+     * POST /api/v1/parsers
+     */
+    public function create(Request $request)
+    {
+        $parser = new Parser();
+        $parser->fill_unsafe($request->input('parser'));
+        Parser::store([$parser]);
+        return Parser::frontend_fetch($parser->q())->first();
+    }
+
+    /**
+     * PATCH /api/v1/parsers/{parser_uid}
+     */
     public function patch($parser_uid, Request $request)
     {
+        /** @var Parser $parser */
+        $parser = Parser::query()->where('parsers.uid', $parser_uid)->firstOrFail();
+        $parser->fill_unsafe($request->input('parser'));
+        Parser::store([$parser]);
     }
 
     /**
@@ -36,6 +54,6 @@ class ParsersController extends Controller
     {
         /** @var Parser $parser */
         $parser = Parser::query()->where('parsers.uid', $parser_uid)->firstOrFail();
-        Parser::remove(Parser::query()->where('id', $parser->id));
+        Parser::remove($parser->q());
     }
 }
