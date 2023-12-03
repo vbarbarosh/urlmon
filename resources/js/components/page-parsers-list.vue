@@ -17,10 +17,14 @@
             <tr v-for="item in items" v-bind:key="item.uid">
                 <th scope="row">1</th>
                 <td>
-                    <router-link :to="`/parsers/${item.uid}`">{{ item.label }}</router-link>
+                    <router-link :to="`/parsers/${item.uid}`">
+                        {{ item.label }}
+                    </router-link>
                 </td>
                 <td>
-                    <badge-secondary>{{ item.total_urls }}</badge-secondary>
+                    <badge-secondary v-if="item.total_urls">
+                        {{ item.total_urls }}
+                    </badge-secondary>
                 </td>
                 <td v-bind:title="item.updated_at">
                     {{ format_date(item.updated_at) }}
