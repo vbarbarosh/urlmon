@@ -17,9 +17,12 @@
         <label :for="id_engine" class="form-label">Engine</label>
         <select v-model="modelValue.engine" :id="id_engine" class="form-select">
             <option disabled>Open this select menu</option>
-            <option value="1">One</option>
-            <option value="2">Two</option>
-            <option value="3">Three</option>
+            <option value="http_status">http_status</option>
+            <option value="http_head">http_head</option>
+            <option value="puppeteer/meta">puppeteer/meta</option>
+            <option value="puppeteer/pages">puppeteer/pages</option>
+            <option value="wget/meta">wget/meta</option>
+            <option value="wget/pages">wget/pages</option>
         </select>
     </div>
 

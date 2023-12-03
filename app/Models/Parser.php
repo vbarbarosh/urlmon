@@ -134,7 +134,9 @@ class Parser extends Model
             case Parser::ENGINE_HTTP_STATUS:
             case Parser::ENGINE_HTTP_HEAD:
             case Parser::ENGINE_PUPPETEER_META:
+            case Parser::ENGINE_PUPPETEER_PAGES:
             case Parser::ENGINE_WGET_META:
+            case Parser::ENGINE_WGET_PAGES:
                 $this->engine = $input['engine'];
                 break;
             }
@@ -171,7 +173,7 @@ class Parser extends Model
 
     private function run_http_status(Url $url)
     {
-        $s = shell(['curl', '-is', $url]);
+        $s = shell(['curl', '-is', $url->url]);
         $s = explode("\r\n", $s)[0];
         $s = explode("\r\n", $s)[0];
         $s = trim($s);
@@ -181,7 +183,7 @@ class Parser extends Model
 
     private function run_http_head(Url $url)
     {
-        $s = shell(['curl', '-isI', $url]);
+        $s = shell(['curl', '-isI', $url->url]);
         $s = explode("\r\n", $s)[0];
         $url->meta = $s;
         $url->save();

@@ -6,7 +6,10 @@
     </div>
 
     <div class="mb-3">
-        <label :for="id_parser" class="form-label">Parser</label>
+        <label :for="id_parser" class="form-label">
+            Parser
+            <router-link :to="`/parsers/${modelValue.parser_uid}`">(edit)</router-link>
+        </label>
         <select v-model="modelValue.parser_uid" :id="id_parser" class="form-select">
             <option disabled>Open this select menu</option>
             <template v-for="item in parsers || []" v-bind:key="item.uid">
