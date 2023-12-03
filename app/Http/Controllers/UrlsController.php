@@ -38,23 +38,14 @@ class UrlsController extends Controller
     }
 
     /**
-     * POST /api/v1/urls/{url_uid}/parse
-     */
-    public function parse($url_uid)
-    {
-        /** @var Url $url */
-        $url = Url::query()->where('urls.uid', $url_uid)->firstOrFail();
-        $url->parse();
-    }
-
-    /**
      * PATCH /api/v1/urls/{url_uid}
      */
     public function patch($url_uid, Request $request)
     {
         /** @var Url $url */
         $url = Url::query()->where('urls.uid', $url_uid)->firstOrFail();
-        return Url::frontend_list($url->q())->first();
+        $url->fill_unsafe($request->input('url'));
+        Url::store([$url]);
     }
 
     /**
@@ -65,5 +56,15 @@ class UrlsController extends Controller
         /** @var Url $url */
         $url = Url::query()->where('urls.uid', $url_uid)->firstOrFail();
         return Url::remove($url->q());
+    }
+
+    /**
+     * POST /api/v1/urls/{url_uid}/parse
+     */
+    public function parse($url_uid)
+    {
+        /** @var Url $url */
+        $url = Url::query()->where('urls.uid', $url_uid)->firstOrFail();
+        $url->parse();
     }
 }
