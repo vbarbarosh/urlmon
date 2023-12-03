@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreign('promise_id')->on('promises')->references('id');
             $table->string('name')->index();
             $table->string('url');
+            $table->integer('size');
             $table->timestamps();
         });
     }

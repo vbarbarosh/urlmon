@@ -17,6 +17,7 @@ use Illuminate\Support\Collection;
  * @property $promise_id
  * @property $name
  * @property $url
+ * @property $size
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Promise $promise
@@ -41,6 +42,7 @@ class Artifact extends Model
                 'promise' => $promises[$artifact->promise_id] ?? null,
                 'name' => $artifact->name,
                 'url' => $artifact->url,
+                'size' => $artifact->size,
                 'created_at' => $artifact->created_at->toAtomString(),
                 'updated_at' => $artifact->updated_at->toAtomString(),
             ];
@@ -58,6 +60,7 @@ class Artifact extends Model
                 'promise' => $promises[$artifact->promise_id] ?? null,
                 'name' => $artifact->name,
                 'url' => $artifact->url,
+                'size' => $artifact->size,
                 'created_at' => $artifact->created_at->toAtomString(),
                 'updated_at' => $artifact->updated_at->toAtomString(),
             ];
@@ -76,10 +79,11 @@ class Artifact extends Model
                 'uid' => $item->uid,
                 'name' => $item->name,
                 'url' => $item->url,
+                'size' => $item->size,
             ];
         }
 
-        Artifact::query()->upsert($values, ['id', 'uid'], ['promise_id', 'name', 'url']);
+        Artifact::query()->upsert($values, ['id', 'uid'], ['promise_id', 'name', 'url', 'size']);
     }
 
     /**

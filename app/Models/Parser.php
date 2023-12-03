@@ -219,12 +219,14 @@ class Parser extends Model
         $artifact = new Artifact();
         $artifact->promise_id = $promise->id;
         $artifact->name = 'db.csv';
-        $artifact->url = 'https://example.com/' . $artifact->uid;
+        $artifact->url = 'https://example.com/' . $artifact->uid . '/db.csv';
+        $artifact->size = random_int(1000, 1000000);
         $artifact->save();
         $artifact = new Artifact();
         $artifact->promise_id = $promise->id;
         $artifact->name = 'logs.txt';
-        $artifact->url = 'https://example.com/' . $artifact->uid;
+        $artifact->url = 'https://example.com/' . $artifact->uid . '/logs.txt';
+        $artifact->size = random_int(1000, 1000000);
         $artifact->save();
     }
 }
