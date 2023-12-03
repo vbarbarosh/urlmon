@@ -50,6 +50,7 @@ class Promise extends Model
             return new FrontendArray($promise->id, [
                 'uid' => $promise->uid,
                 'status' => $promise->status,
+                'subject' => $promise->subject,
                 'user_friendly_status' => $promise->user_friendly_status,
                 'created_at' => $promise->created_at->toAtomString(),
                 'updated_at' => $promise->updated_at->toAtomString(),
@@ -63,6 +64,7 @@ class Promise extends Model
             return new FrontendArray($promise->id, [
                 'uid' => $promise->uid,
                 'status' => $promise->status,
+                'subject' => $promise->subject,
                 'user_friendly_status' => $promise->user_friendly_status,
                 'user_friendly_response' => $promise->user_friendly_response,
                 'created_at' => $promise->created_at->toAtomString(),
