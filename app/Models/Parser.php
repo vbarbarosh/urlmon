@@ -184,7 +184,7 @@ class Parser extends Model
     private function run_http_head(Url $url)
     {
         $s = shell(['curl', '-isI', $url->url]);
-        $s = explode("\r\n", $s)[0];
+        $s = explode("\r\n\r\n", $s)[0];
         $url->meta = $s;
         $url->save();
     }
