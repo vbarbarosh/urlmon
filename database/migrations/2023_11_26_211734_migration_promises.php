@@ -20,7 +20,7 @@ return new class extends Migration
             $table->json('request')->nullable();
             $table->json('response')->nullable();
             $table->string('user_friendly_status');
-            $table->json('user_friendly_response');
+            $table->json('user_friendly_response')->nullable();
             $table->timestamps();
         });
     }

@@ -26,6 +26,8 @@ class Promise extends Model
 {
     use HasFactory, Cast, Q;
 
+    const SUBJECT_PARSE = 'parse';
+
     const STATUS_PENDING = 'pending';
     const STATUS_REJECTED = 'rejected';
     const STATUS_FULFILLED = 'fulfilled';
@@ -74,6 +76,7 @@ class Promise extends Model
         parent::__construct($attributes);
         $this->uid = uid_promise();
         $this->status = Promise::STATUS_PENDING;
+        $this->user_friendly_status = 'Pending';
     }
 
     public function replicate(array $except = null): self

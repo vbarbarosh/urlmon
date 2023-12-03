@@ -38,7 +38,7 @@ class Artifact extends Model
         return $artifacts->map(function (Artifact $artifact)  use ($promises) {
             return [
                 'uid' => $artifact->uid,
-                'promise' => $promises[$artifact->id] ?? null,
+                'promise' => $promises[$artifact->promise_id] ?? null,
                 'name' => $artifact->name,
                 'url' => $artifact->url,
                 'created_at' => $artifact->created_at->toAtomString(),
@@ -55,7 +55,7 @@ class Artifact extends Model
         return $artifacts->map(function (Artifact $artifact)  use ($promises) {
             return [
                 'uid' => $artifact->uid,
-                'promise' => $promises[$artifact->id] ?? null,
+                'promise' => $promises[$artifact->promise_id] ?? null,
                 'name' => $artifact->name,
                 'url' => $artifact->url,
                 'created_at' => $artifact->created_at->toAtomString(),

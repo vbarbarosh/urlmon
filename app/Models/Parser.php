@@ -179,6 +179,7 @@ class Parser extends Model
         $s = trim($s);
         $url->meta = $s;
         $url->save();
+        $this->create_dummy_artifacts($url);
     }
 
     private function run_http_head(Url $url)
@@ -187,6 +188,7 @@ class Parser extends Model
         $s = explode("\r\n\r\n", $s)[0];
         $url->meta = $s;
         $url->save();
+        $this->create_dummy_artifacts($url);
     }
 
     private function run_puppeteer(Url $url)
@@ -195,17 +197,34 @@ class Parser extends Model
             shell([base_path('bin/url-meta'), $url->url, $this->config['js'] ?? ''], $d);
             $url->meta = json_decode(file_get_contents("$d/a.json"), true);
             $url->save();
-            $promise = new Promise();
-            $promise->status = Promise::STATUS_FULFILLED;
-            $promise->save();
-            $artifact = new Artifact();
-            $artifact->promise_id = $promise->id;
-            $artifact->name = 'db.csv';
-            $artifact->save();
-            $artifact = new Artifact();
-            $artifact->promise_id = $promise->id;
-            $artifact->name = 'logs.txt';
-            $artifact->save();
+            $this->create_dummy_artifacts($url);
         });
+    }
+
+    private function create_dummy_artifacts(Url $url): void
+    {
+        $promise = new Promise();
+        $promise->status = Promise::STATUS_FULFILLED;
+        $promise->subject = Promise::SUBJECT_PARSE;
+        $promise->user_friendly_status = 'Done';
+        $promise->request = [
+            'parser' => [
+                'uid' => $this->uid,
+                'engine' => $this->engine,
+                'config' => $this->config,
+            ],
+            'url'=> $url->url,
+        ];
+        $promise->save();
+        $artifact = new Artifact();
+        $artifact->promise_id = $promise->id;
+        $artifact->name = 'db.csv';
+        $artifact->url = 'https://example.com/' . $artifact->uid;
+        $artifact->save();
+        $artifact = new Artifact();
+        $artifact->promise_id = $promise->id;
+        $artifact->name = 'logs.txt';
+        $artifact->url = 'https://example.com/' . $artifact->uid;
+        $artifact->save();
     }
 }
