@@ -39,7 +39,7 @@
         },
         methods: {
             refresh: async function () {
-                this.target = api_targets_fetch({target_uid: this.$route.params.target_uid});
+                this.target = await api_targets_fetch({target_uid: this.$route.params.target_uid});
             },
             submit: async function () {
                 await blocking(api_targets_patch({target: this.target}));
