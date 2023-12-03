@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ParsersController;
+use App\Http\Controllers\PromisesController;
 use App\Http\Controllers\UrlsController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -44,3 +45,7 @@ Route::post('/api/v1/urls', [UrlsController::class, 'create']);
 Route::post('/api/v1/urls/{url_uid}/parse', [UrlsController::class, 'parse']);
 Route::patch('/api/v1/urls/{url_uid}', [UrlsController::class, 'patch']);
 Route::delete('/api/v1/urls/{url_uid}', [UrlsController::class, 'remove']);
+
+Route::get('/api/v1/promises.json', [PromisesController::class, 'list']);
+Route::get('/api/v1/promises/{promise_uid}', [PromisesController::class, 'fetch']);
+Route::delete('/api/v1/promises/{promise_uid}', [PromisesController::class, 'remove']);
