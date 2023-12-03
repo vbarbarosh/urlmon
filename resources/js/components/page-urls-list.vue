@@ -7,7 +7,7 @@
             <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">url</th>
+                <th scope="col">label + url</th>
                 <th scope="col">updated</th>
                 <th scope="col" />
             </tr>
@@ -16,10 +16,16 @@
             <tr v-for="item in items" v-bind:key="item.uid">
                 <th scope="row">1</th>
                 <td>
-                    <a v-bind:href="item.url" target="_blank">{{ item.url }}</a>
+                    <template v-if="item.label">
+                        <div>{{ item.label }}</div>
+                        <div class="fs10 fw3"><a v-bind:href="item.url" target="_blank">{{ item.url }}</a></div>
+                    </template>
+                    <template    v-else>
+                        <div><a v-bind:href="item.url" target="_blank">{{ item.url }}</a></div>
+                    </template>
                 </td>
                 <td v-bind:title="item.updated_at">
-                    {{ item.updated_at}}
+                    {{ format_date(item.updated_at) }}
                 </td>
                 <td>
                     <button-group>
@@ -34,6 +40,7 @@
 </template>
 
 <script>
+    import format_date from '../helpers/format_date';
     import ButtonGroup from './button-groups/button-group.vue';
     import ButtonInfo from './buttons/button-info.vue';
     import ButtonLight from './buttons/button-light.vue';
@@ -51,6 +58,7 @@
             };
         },
         methods: {
+            format_date,
             refresh: async function () {
                 this.items = await api_urls_list();
             },

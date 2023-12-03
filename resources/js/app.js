@@ -1,10 +1,9 @@
 import './bootstrap';
 
-import { createApp } from 'vue';
 import App from './components/app.vue';
 import modal_error from './helpers/modal/modal_error';
-import {history} from './router';
-import {router} from './router';
+import {createApp} from 'vue';
+import {history, router} from './router';
 
 const vm = createApp(App);
 

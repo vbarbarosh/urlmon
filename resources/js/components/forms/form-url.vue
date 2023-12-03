@@ -6,9 +6,16 @@
     </div>
 
     <div class="mb-3">
+        <label :for="id_label " class="form-label">Label</label>
+        <input v-model="modelValue.label" :id="id_label" type="text" class="form-control" />
+    </div>
+
+    <div class="mb-3">
         <label :for="id_parser" class="form-label">
             Parser
-            <router-link :to="`/parsers/${modelValue.parser_uid}`">(edit)</router-link>
+            <template v-if="modelValue.parser_uid">
+                <router-link :to="`/parsers/${modelValue.parser_uid}`">(edit)</router-link>
+            </template>
         </label>
         <select v-model="modelValue.parser_uid" :id="id_parser" class="form-select">
             <option disabled>Open this select menu</option>
@@ -41,8 +48,8 @@
 </template>
 
 <script>
-    import autosize from 'autosize/dist/autosize';
     import api_parsers_list from '../../helpers/api/api_parsers_list';
+    import autosize from 'autosize/dist/autosize';
     import blocking from '../../helpers/blocking';
     import cuid2 from '../../helpers/cuid2';
 
@@ -52,6 +59,7 @@
             return {
                 id_uid: cuid2(),
                 id_parser: cuid2(),
+                id_label: cuid2(),
                 id_url: cuid2(),
                 id_meta: cuid2(),
                 id_created: cuid2(),
@@ -60,14 +68,17 @@
             };
         },
         watch: {
-            'modalValue.meta': function () {
+            'modelValue.meta': function () {
                 this.$nextTick(function () {
                     autosize.update(this.$refs.textarea);
                 });
             },
         },
-        created: async function () {
-            this.parsers = await blocking(api_parsers_list());
+        created: function () {
+            const _this = this;
+            setTimeout(async function () {
+                _this.parsers = await blocking(api_parsers_list());
+            }, 0);
         },
         mounted: function () {
             autosize(this.$refs.textarea);

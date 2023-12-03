@@ -17,6 +17,7 @@ use Illuminate\Support\Collection;
  * @property $id
  * @property $uid
  * @property $parser_id
+ * @property $label
  * @property $url
  * @property $meta
  * @property Carbon $created_at
@@ -42,6 +43,7 @@ class Url extends Model
             return [
                 'uid' => $url->uid,
                 'parser_uid' => $url->parser->uid,
+                'label' => $url->label,
                 'url' => $url->url,
                 'meta' => $url->meta,
                 'created_at' => $url->created_at->toAtomString(),
@@ -65,11 +67,12 @@ class Url extends Model
                 'id' => $item->id,
                 'uid' => $item->uid,
                 'parser_id' => $item->parser_id,
+                'label' => $item->label,
                 'url' => $item->url,
             ];
         }
 
-        Url::query()->upsert($values, ['id', 'uid'], ['parser_id', 'url']);
+        Url::query()->upsert($values, ['id', 'uid'], ['parser_id', 'label', 'url']);
     }
 
     /**
@@ -108,6 +111,9 @@ class Url extends Model
                 throw new UserFriendlyException("Parser not found: {$input['parser_uid']}");
             }
             $this->parser_id = $parser->id;
+        }
+        if (isset($input['label'])) {
+            $this->label = trim($input['label']);
         }
         if (isset($input['url'])) {
             $this->url = trim($input['url']);

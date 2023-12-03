@@ -14,14 +14,12 @@
     import ButtonGroupRight from './button-groups/button-group-right.vue';
     import ButtonSuccess from './buttons/button-success.vue';
     import ButtonWarning from './buttons/button-warning.vue';
-    import FormParser from './forms/form-parser.vue';
     import FormUrl from './forms/form-url.vue';
 
     const page_urls_new = {
         components: {
             ButtonSuccess, ButtonWarning, ButtonGroupRight,
             FormUrl,
-            FormParser,
         },
         data: function () {
             return {
