@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArtifactsController;
 use App\Http\Controllers\ParsersController;
 use App\Http\Controllers\PromisesController;
 use App\Http\Controllers\UrlsController;
@@ -49,3 +50,7 @@ Route::delete('/api/v1/urls/{url_uid}', [UrlsController::class, 'remove']);
 Route::get('/api/v1/promises.json', [PromisesController::class, 'list']);
 Route::get('/api/v1/promises/{promise_uid}', [PromisesController::class, 'fetch']);
 Route::delete('/api/v1/promises/{promise_uid}', [PromisesController::class, 'remove']);
+
+Route::get('/api/v1/artifacts.json', [ArtifactsController::class, 'list']);
+Route::get('/api/v1/artifacts/{artifact_uid}', [ArtifactsController::class, 'fetch']);
+Route::delete('/api/v1/artifacts/{artifact_uid}', [ArtifactsController::class, 'remove']);

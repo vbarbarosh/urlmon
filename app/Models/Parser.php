@@ -195,6 +195,17 @@ class Parser extends Model
             shell([base_path('bin/url-meta'), $url->url, $this->config['js'] ?? ''], $d);
             $url->meta = json_decode(file_get_contents("$d/a.json"), true);
             $url->save();
+            $promise = new Promise();
+            $promise->status = Promise::STATUS_FULFILLED;
+            $promise->save();
+            $artifact = new Artifact();
+            $artifact->promise_id = $promise->id;
+            $artifact->name = 'db.csv';
+            $artifact->save();
+            $artifact = new Artifact();
+            $artifact->promise_id = $promise->id;
+            $artifact->name = 'logs.txt';
+            $artifact->save();
         });
     }
 }
