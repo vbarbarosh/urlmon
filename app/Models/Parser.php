@@ -194,27 +194,18 @@ class Parser extends Model
     private function run_puppeteer(Target $target)
     {
         tempdir(function ($d) use ($target) {
-            shell([base_path('bin/url-meta'), $target->url, $this->config['js'] ?? ''], $d);
+            shell(['timeout', '30s', base_path('bin/url-meta'), $target->url, $this->config['js'] ?? ''], $d);
             $target->meta = json_decode(file_get_contents("$d/a.json"), true);
             $target->save();
             $this->create_dummy_artifacts($target);
+            $target->attach("$d/a.png", 'screenshot.png');
         });
     }
 
     private function create_dummy_artifacts(Target $target): void
     {
         Artifact::remove($target->artifacts());
-        $artifact = new Artifact();
-        $artifact->target_id = $target->id;
-        $artifact->name = 'db.csv';
-        $artifact->url = 'https://example.com/' . $artifact->uid . '/db.csv';
-        $artifact->size = random_int(1000, 1000000);
-        $artifact->save();
-        $artifact = new Artifact();
-        $artifact->target_id = $target->id;
-        $artifact->name = 'logs.txt';
-        $artifact->url = 'https://example.com/' . $artifact->uid . '/logs.txt';
-        $artifact->size = random_int(1000, 1000000);
-        $artifact->save();
+        $target->attach_body('db.csv', $target->toJson());
+        $target->attach_body('logs.txt', $target->toJson());
     }
 }

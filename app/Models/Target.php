@@ -157,4 +157,27 @@ class Target extends Model
     {
         $this->parser->run($this);
     }
+
+    public function attach($file, $name = null)
+    {
+        $name = $name ?? basename($file);
+        $artifact = new Artifact();
+        $artifact->target_id = $this->id;
+        $artifact->name = $name;
+        $artifact->url = s3_files_url(sprintf('%s/%s', $artifact->uid, $artifact->name));
+        $artifact->size = filesize($file);
+        s3_put_object($artifact->url, ['SourceFile' => $file, 'ACL' => S3_ACL_PRIVATE]);
+        $artifact->save();
+    }
+
+    public function attach_body($name, $body)
+    {
+        $artifact = new Artifact();
+        $artifact->target_id = $this->id;
+        $artifact->name = $name;
+        $artifact->url = s3_files_url(sprintf('%s/%s', $artifact->uid, $artifact->name));
+        $artifact->size = strlen($body);
+        s3_put_object($artifact->url, ['Body' => $body, 'ACL' => S3_ACL_PRIVATE]);
+        $artifact->save();
+    }
 }

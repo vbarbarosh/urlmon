@@ -16,7 +16,9 @@
                 <div v-for="item in target.artifacts" v-bind:key="item.uid">
                     <a :href="item.url" target="_blank">
                         <figure class="figure">
-                            <img src="https://place-hold.it/100x100" class="figure-img img-fluid rounded max-w100 max-h100" alt="...">
+                            <template v-if="item.url.match(/\.(png|jpg|gif)(\?.*$|$)/)">
+                                <img :src="item.url" class="figure-img img-fluid rounded max-w100 max-h100" alt="...">
+                            </template>
                             <figcaption class="figure-caption">{{ item.name }} <small class="fs8">{{ format_size(item.size) }}</small></figcaption>
                         </figure>
                     </a>

@@ -8,7 +8,7 @@
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">Label</th>
-                <th scope="col">urls</th>
+                <th scope="col">Targets</th>
                 <th scope="col">updated</th>
                 <th scope="col"></th>
             </tr>
@@ -22,9 +22,9 @@
                     </router-link>
                 </td>
                 <td>
-                    <router-link v-if="item.total_urls" :to="`/urls?parser=${item.uid}`">
+                    <router-link v-if="item.targets_count" :to="`/targets?parser=${item.uid}`">
                         <badge-secondary>
-                            {{ item.total_urls }}
+                            {{ item.targets_count }}
                         </badge-secondary>
                     </router-link>
                 </td>

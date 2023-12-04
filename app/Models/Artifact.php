@@ -11,6 +11,8 @@ use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\RateLimiter\AbstractRequestRateLimiter;
+use Throwable;
 
 /**
  * @property $id
@@ -43,7 +45,7 @@ class Artifact extends Model
                 'uid' => $artifact->uid,
                 'target_uid' => $targets[$artifact->target_id]['uid'] ?? null,
                 'name' => $artifact->name,
-                'url' => $artifact->url,
+                'url' => s3_sign_get_nothrow($artifact->url, now()->addHour()),
                 'size' => $artifact->size,
                 'created_at' => $artifact->created_at->toAtomString(),
                 'updated_at' => $artifact->updated_at->toAtomString(),
@@ -63,7 +65,7 @@ class Artifact extends Model
                 'target_uid' => $targets[$artifact->target_id]['uid'] ?? null,
                 'target' => $targets[$artifact->target_id] ?? null,
                 'name' => $artifact->name,
-                'url' => $artifact->url,
+                'url' => s3_sign_get_nothrow($artifact->url, now()->addHour()),
                 'size' => $artifact->size,
                 'created_at' => $artifact->created_at->toAtomString(),
                 'updated_at' => $artifact->updated_at->toAtomString(),
@@ -98,6 +100,12 @@ class Artifact extends Model
         safety_check_query_for_batch_remove($query);
 
         return $query->pluck('artifacts.id')->chunk(100)->sum(function ($ids) {
+            $urls = Artifact::query()->whereIn('id', $ids)->whereNotNull('url')->distinct()->pluck('url');
+            foreach ($urls as $url) {
+                if (str_starts_with($url, s3_files_url())) {
+                    s3_rm($url);
+                }
+            }
             return Artifact::query()->whereIn('id', $ids)->delete();
         });
     }
