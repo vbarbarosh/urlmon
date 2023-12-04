@@ -33,15 +33,22 @@
 
     <div class="mb-3">
         <label :for="id_config" class="form-label">Config (individual for each engine)</label>
-        <textarea v-model="modelValue.config" :id="id_config" class="form-control font-monospace" rows="3" />
+<!--        <textarea v-model="modelValue.config" :id="id_config" class="form-control font-monospace" rows="3" />-->
+<!--        <json-editor-vue v-model="js" />-->
+        <codemirror v-model="modelValue.config.js" v-bind:lang="lang" v-bind:extensions="[theme]" basic />
     </div>
 
 </template>
 
 <script>
+    import JsonEditorVue from 'json-editor-vue';
+    import {javascript} from '@codemirror/lang-javascript';
+    import Codemirror from 'vue-codemirror6';
     import cuid2 from '../../helpers/cuid2';
+    import {materialDarkTheme} from 'cm6-theme-material-dark';
 
     const form_parser = {
+        components: {JsonEditorVue, Codemirror},
         props: ['modelValue'],
         data: function () {
             return {
@@ -50,8 +57,20 @@
                 id_engine: cuid2(),
                 id_match: cuid2(),
                 id_config: cuid2(),
+                lang: javascript(),
+                theme: materialDarkTheme,
             };
         },
+        watch: {
+            'modelValue.config': {
+                immediate: true,
+                handler: function (next) {
+                    if (typeof next !== 'object') {
+                        this.modelValue.config = {js: ''};
+                    }
+                },
+            }
+        }
     };
 
     export default form_parser;

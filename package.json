@@ -9,19 +9,23 @@
         "@paralleldrive/cuid2": "^2.2.2",
         "@vitejs/plugin-vue": "^4.5.0",
         "axios": "^1.6.1",
+        "cm6-theme-material-dark": "^0.2.0",
         "jquery": "^3.7.1",
+        "json-editor-vue": "^0.11.1",
         "laravel-vite-plugin": "^0.8.0",
         "sass": "^1.69.5",
         "vite": "^4.0.0",
         "vue-router": "^4.2.5"
     },
     "dependencies": {
+        "@codemirror/lang-javascript": "^6.2.1",
         "@vbarbarosh/node-helpers": "^3.0.0",
         "@vbarbarosh/puppeteer-helpers": "github:vbarbarosh/puppeteer-helpers",
         "autosize": "^6.0.1",
         "bluebird": "^3.7.2",
         "bytes": "^3.1.2",
         "puppeteer": "^21.5.2",
-        "vue": "^3.3.9"
+        "vue": "^3.3.9",
+        "vue-codemirror6": "^1.1.31"
     }
 }

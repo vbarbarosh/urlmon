@@ -68,7 +68,7 @@ class Parser extends Model
                 'label' => $parser->label,
                 'engine' => $parser->engine,
                 'match' => $parser->match,
-                'config' => json_encode($parser->config),
+                'config' => $parser->config,
                 'targets_count' => $parser->targets_count,
                 'created_at' => $parser->created_at->toAtomString(),
                 'updated_at' => $parser->updated_at->toAtomString(),
@@ -88,7 +88,7 @@ class Parser extends Model
                 'engine' => $item->engine,
                 'label' => $item->label,
                 'match' => $item->match,
-                'config' => $item->config,
+                'config' => json_encode($item->config),
             ];
         }
 
@@ -145,9 +145,7 @@ class Parser extends Model
             $this->match = trim($input['match']) ?: '.*';
         }
         if (isset($input['config'])) {
-            if (json_decode($input['config'], true) !== null) {
-                $this->config = $input['config'];
-            }
+            $this->config = $input['config'];
         }
     }
 
