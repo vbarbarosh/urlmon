@@ -39,8 +39,8 @@ async function main()
     const browser = await puppeteer.launch(options);
     user_friendly_status('Preparing...');
     try {
-        // const page = puppeteer_log(await browser.newPage(), s => process.stderr.write(`${s}\n`));
-        const page = await browser.newPage();
+        const page = puppeteer_log(await browser.newPage(), log);
+        // const page = await browser.newPage();
         await page.setViewport({width: 1280, height: 1024});
         user_friendly_status(`Opening ${url}...`);
         let out = null;
@@ -50,10 +50,10 @@ async function main()
                 out = {url, ...meta};
             }
             catch (error) {
-                process.stderr.write(render_log(`${TERM_YELLOW}Warning: ${url}: ${error.message}${TERM_RESET}`));
+                log(`${TERM_YELLOW}Warning: ${url}: ${error.message}${TERM_RESET}`);
                 if (error.message.match(/Page load failed: 5\d\d/)) {
                     for (let n = 1, nn = attempt*5; n <= nn; ++n) {
-                        process.stderr.write(render_log(`${TERM_YELLOW}Waiting for next attempt ${n} of ${nn}${TERM_RESET}`));
+                        log(`${TERM_YELLOW}Waiting for next attempt ${n} of ${nn}${TERM_RESET}`);
                         await Promise.delay(1000);
                     }
                     continue;
@@ -63,7 +63,7 @@ async function main()
                     out = {url, ...meta};
                 }
                 catch (error2) {
-                    process.stderr.write(render_log(`${TERM_RED}Error: ${url}: ${error2.message}${TERM_RESET}`));
+                    log(`${TERM_RED}Error: ${url}: ${error2.message}${TERM_RESET}`);
                     out = {url, error: {message: error2.message, stack: error2.stack}};
                 }
             }
@@ -117,7 +117,8 @@ function format_bytes_kb(n)
 function render_log(message)
 {
     const elapsed = Date.now() - started.getTime();
-    return `[${format_ms_human(elapsed)}][${format_bytes_kb(process.memoryUsage().heapUsed).padStart(5, ' ')}] ${message}\n`;
+    const s = message.startsWith('[') ? '' : ' ';
+    return `[${format_ms_human(elapsed)}][${format_bytes_kb(process.memoryUsage().heapUsed).padStart(5, ' ')}]${s}${message}\n`;
 }
 
 // Treat /dev/fd/3 as a special file for user friendly-messages.
@@ -125,6 +126,11 @@ function render_log(message)
 function user_friendly_status(status)
 {
     fs.write(2, render_log(status), () => 0);
+}
+
+function log(s)
+{
+    fs.appendFile('logs.txt', render_log(s), () => 0);
 }
 
 // async function fs_read_eof(fp)

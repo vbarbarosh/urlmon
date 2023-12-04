@@ -197,6 +197,7 @@ class Parser extends Model
             $target->save();
             $this->create_dummy_artifacts($target);
             $target->attach("$d/a.png", 'screenshot.png');
+            $target->attach("$d/logs.txt");
         });
     }
 
@@ -204,6 +205,5 @@ class Parser extends Model
     {
         Artifact::remove($target->artifacts());
         $target->attach_body('db.csv', $target->toJson());
-        $target->attach_body('logs.txt', $target->toJson());
     }
 }
