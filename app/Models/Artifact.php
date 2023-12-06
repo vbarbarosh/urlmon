@@ -11,8 +11,6 @@ use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Symfony\Component\HttpFoundation\RateLimiter\AbstractRequestRateLimiter;
-use Throwable;
 
 /**
  * @property $id
@@ -21,6 +19,8 @@ use Throwable;
  * @property $name
  * @property $url
  * @property $size
+ * @property $type
+ * @property $meta
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Target $target
@@ -34,16 +34,21 @@ class Artifact extends Model
         'target_id',
     ];
 
+    protected $casts = [
+        'meta' => 'json',
+    ];
+
     static public function frontend_list($query): Collection
     {
         $artifacts = $query->get();
         $target_ids = $artifacts->pluck('target_id');
-        $targets = Target::frontend_list(Target::query()->whereIn('targets.id', $target_ids))->keyBy('id');
+        /** @var Target[] $targets */
+        $targets = Target::query()->whereIn('targets.id', $target_ids)->get()->keyBy('id');
         return $artifacts->map(function (Artifact $artifact)  use ($targets) {
             $ids = ['id' => $artifact->id, 'target_id' => $artifact->target_id];
             return new FrontendArray($ids, [
                 'uid' => $artifact->uid,
-                'target_uid' => $targets[$artifact->target_id]['uid'] ?? null,
+                'target_uid' => $targets[$artifact->target_id]->uid ?? null,
                 'name' => $artifact->name,
                 'url' => s3_sign_get_nothrow($artifact->url, now()->addHour()),
                 'size' => $artifact->size,
@@ -86,10 +91,12 @@ class Artifact extends Model
                 'name' => $item->name,
                 'url' => $item->url,
                 'size' => $item->size,
+                'type' => $item->type,
+                'meta' => $item->meta,
             ];
         }
 
-        Artifact::query()->upsert($values, ['id', 'uid'], ['target_id', 'name', 'url', 'size']);
+        Artifact::query()->upsert($values, ['id', 'uid'], ['target_id', 'name', 'url', 'size', 'type', 'meta']);
     }
 
     /**
