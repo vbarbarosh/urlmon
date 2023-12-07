@@ -14,7 +14,7 @@ define('S3_NOCACHE', 'private, max-age=0, no-cache');
 define('S3_ACL_PUBLIC_READ', 'public-read');
 define('S3_ACL_PRIVATE', 'private');
 
-function group_urls(array $urls): array
+function s3_group(array $urls): array
 {
     static $s3_clients = null;
 
@@ -68,20 +68,20 @@ function s3_parse(string $url): array
 function s3_sign_get($url, Carbon $expires_at, array $options = []): string
 {
     /** @var S3Client $s3_client */
-    $s3_client = group_urls([$url])[1]['client'];
+    $s3_client = s3_group([$url])[1]['client'];
     $cmd = $s3_client->getCommand('getObject', array_merge(s3_parse($url), $options));
     return (string) $s3_client->createPresignedRequest($cmd, $expires_at)->getUri();
 }
 
 function s3_sign_get_nothrow(string $url, Carbon $expires_at, array $options = []): ?string
 {
-    $groups = group_urls([$url]);
+    $groups = s3_group([$url]);
     if (empty($groups[1])) {
         return null;
     }
 
     /** @var S3Client $s3_client */
-    $s3_client = group_urls([$url])[1]['client'];
+    $s3_client = s3_group([$url])[1]['client'];
     $cmd = $s3_client->getCommand('getObject', array_merge(s3_parse($url), $options));
     return (string) $s3_client->createPresignedRequest($cmd, $expires_at)->getUri();
 }
@@ -95,7 +95,7 @@ function s3_sign_get_domain($url, Carbon $expires_at, array $options = [])
 
     if (empty($client_from_bucket[$params['Bucket']])) {
         /** @var S3Client $s3_client */
-        $s3_client = group_urls([$url])[1]['client'];
+        $s3_client = s3_group([$url])[1]['client'];
         /** @var Credentials $credentials */
         $credentials = $s3_client->getCredentials()->wait();
         $client_from_bucket[$params['Bucket']] = new S3Client([
@@ -157,7 +157,7 @@ function s3_sign_get_domain($url, Carbon $expires_at, array $options = [])
 function s3_sign_put(string $url, Carbon $expires_at, array $options = []): string
 {
     /** @var S3Client $s3_client */
-    $s3_client = group_urls([$url])[1]['client'];
+    $s3_client = s3_group([$url])[1]['client'];
     $cmd = $s3_client->getCommand('putObject', array_merge(s3_parse($url), $options));
     return (string) $s3_client->createPresignedRequest($cmd, $expires_at)->getUri();
 }
@@ -194,7 +194,7 @@ function s3_files_url(string $key = ''): string
 
 function s3_client(string $url): S3Client
 {
-    $tmp = group_urls([$url]);
+    $tmp = s3_group([$url]);
     if (count($tmp[0]['urls'])) {
         throw new Error("Could not resolve s3 client for $url");
     }
