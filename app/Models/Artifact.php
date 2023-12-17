@@ -57,9 +57,12 @@ class Artifact extends Model
             return new FrontendArray($ids, [
                 'uid' => $artifact->uid,
                 'target_uid' => $targets[$artifact->target_id]->uid ?? null,
+                'type' => $artifact->type,
                 'name' => $artifact->name,
                 'url' => s3_sign_get_nothrow($artifact->url, now()->addHour()),
                 'size' => $artifact->size,
+                'is_image' => $artifact->is_image(),
+                'meta' => $artifact->is_image() ? ['width' => $artifact->meta['width'], 'height' => $artifact->meta['height']] : [],
                 'created_at' => $artifact->created_at->toAtomString(),
                 'updated_at' => $artifact->updated_at->toAtomString(),
             ]);
@@ -76,10 +79,13 @@ class Artifact extends Model
             return new FrontendArray($ids, [
                 'uid' => $artifact->uid,
                 'target_uid' => $targets[$artifact->target_id]['uid'] ?? null,
+                'type' => $artifact->type,
                 'target' => $targets[$artifact->target_id] ?? null,
                 'name' => $artifact->name,
                 'url' => s3_sign_get_nothrow($artifact->url, now()->addHour()),
                 'size' => $artifact->size,
+                'is_image' => $artifact->is_image(),
+                'meta' => $artifact->is_image() ? ['width' => $artifact->meta['width'], 'height' => $artifact->meta['height']] : [],
                 'created_at' => $artifact->created_at->toAtomString(),
                 'updated_at' => $artifact->updated_at->toAtomString(),
             ]);
@@ -146,5 +152,10 @@ class Artifact extends Model
     public function fill_unsafe($input)
     {
         throw new NotImplemented();
+    }
+
+    public function is_image(): bool
+    {
+        return in_array($this->type, Artifact::TYPE_IMAGES);
     }
 }

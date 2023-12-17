@@ -13,23 +13,26 @@
         </div>
         <div class="mg15">
             <div class="sticky-t">
-                <div v-for="item in target.artifacts" v-bind:key="item.uid">
+                <div v-for="item in target.artifacts.filter(v => !v.is_image)" v-bind:key="item.uid">
                     <a :href="item.url" target="_blank">
                         <figure class="figure">
-                            <template v-if="item.url.match(/\.(png|jpg|gif)(\?.*$|$)/)">
+                            <template v-if="item.is_image">
                                 <img :src="item.url" class="figure-img img-fluid rounded max-w100 max-h100" alt="...">
                             </template>
                             <figcaption class="figure-caption">{{ item.name }} <small class="fs8">{{ format_size(item.size) }}</small></figcaption>
                         </figure>
                     </a>
                 </div>
+                <!-- XXX vue3-picture-swipe uses <button /> without [type=button], which leads to form.submit -->
+                <form v-on:submit.stop class="db">
+                    <vue3-picture-swipe v-bind:items="photoswipe_items" v-bind:options="{shareEl: false}" class="vue3-picture-swipe2" />
+                </form>
             </div>
         </div>
     </form>
 </template>
 
 <script>
-    import format_size from '../helpers/format_size';
     import ButtonDanger from './buttons/button-danger.vue';
     import ButtonGroupRight from './button-groups/button-group-right.vue';
     import ButtonInfo from './buttons/button-info.vue';
@@ -37,23 +40,43 @@
     import ButtonSuccess from './buttons/button-success.vue';
     import ButtonWarning from './buttons/button-warning.vue';
     import FormTarget from './forms/form-target.vue';
+    import Vue3PictureSwipe from 'vue3-picture-swipe';
     import api_targets_fetch from '../helpers/api/api_targets_fetch';
     import api_targets_parse from '../helpers/api/api_targets_parse';
     import api_targets_patch from '../helpers/api/api_targets_patch';
     import blocking from '../helpers/blocking';
+    import format_size from '../helpers/format_size';
     import modal_target_delete from '../helpers/modal/modal_target_delete';
 
     const page_targets_update = {
-        components: {ButtonInfo, ButtonDanger, ButtonPrimary, ButtonSuccess, ButtonWarning, ButtonGroupRight, FormTarget},
+        components: {
+            ButtonInfo, ButtonDanger, ButtonPrimary, ButtonSuccess, ButtonWarning, ButtonGroupRight,
+            FormTarget, Vue3PictureSwipe,
+        },
         data: function () {
             return {
                 target: null,
             };
         },
+        computed: {
+            photoswipe_items: function () {
+                return this.target.artifacts.filter(v => v.is_image).map(function (artifact) {
+                    return {
+                        src: artifact.url,
+                        thumbnail: `http://127.0.0.1:9002/fit?url=${encodeURIComponent(artifact.url)}&width=400&height=400`,
+                        w: artifact.meta.width,
+                        h: artifact.meta.height,
+                        alt: artifact.name,
+                    };
+                });
+            },
+        },
         methods: {
             format_size,
             refresh: async function () {
-                this.target = await api_targets_fetch({target_uid: this.$route.params.target_uid});
+                // XXX Found no way to tell photoswipe not to use location url
+                const target_uid = this.$route.params.target_uid.replace(/&.*/, '');
+                this.target = await api_targets_fetch({target_uid});
             },
             submit: async function () {
                 await blocking(api_targets_patch({target: this.target}));
@@ -78,3 +101,10 @@
 
     export default page_targets_update;
 </script>
+
+<style lang="sass">
+.vue3-picture-swipe2 [itemprop=thumbnail]
+    display: block
+    max-width: 100px
+    max-height: 100px
+</style>
