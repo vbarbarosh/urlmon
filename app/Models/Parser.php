@@ -192,12 +192,25 @@ class Parser extends Model
     private function run_puppeteer(Target $target)
     {
         tempdir(function ($d) use ($target) {
-            shell(['timeout', '30s', base_path('bin/url-meta'), $target->url, $this->config['js'] ?? ''], $d);
+            shell(['timeout', '-k', '15s', '10s', base_path('bin/url-meta'), $target->url, $this->config['js'] ?? ''], $d);
             $target->meta = json_decode(file_get_contents("$d/a.json"), true);
             $target->save();
             $this->create_dummy_artifacts($target);
             $target->attach("$d/a.png", 'screenshot.png');
             $target->attach("$d/logs.txt");
+            if ($target->meta['images'] ?? false) {
+                tempdir(function ($d) use ($target) {
+                    $downloads = [];
+                    foreach ($target->meta['images'] as $url) {
+                        $downloads[] = ['url' => $url, 'target_file' => sprintf('%s/%d%s', $d, count($downloads), image_extension_from_url($url))];
+                    }
+                    batch_download($downloads);
+                    foreach ($downloads as $item) {
+                        $name = basename(parse_url($item['url'], PHP_URL_PATH));
+                        $target->attach($item['target_file'], $name);
+                    }
+                });
+            }
         });
     }
 

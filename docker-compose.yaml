@@ -16,3 +16,17 @@ services:
       start_period: 3m
     volumes:
       - ./var/minio:/data
+  imaginary:
+    image: h2non/imaginary
+    network_mode: host
+    environment:
+      PORT: 9002
+    # XXX `-http-cache-ttl 0` will tell imaginary to always return `Cache-Control: private, no-cache, no-store, must-revalidate`.
+    #     There should be a line in nginx proxy config to override this header in case of a sucesful response:
+    #     /etc/nginx/sites-available/com.xxx.imaginary
+    #     add_header Cache-Control 'public, s-maxage=31556926, max-age=31556926, no-transform';
+    # This trick is necessary because imaginary will always return the same
+    # value for Cache-Control header. Even if was unable to fetch original image
+    # it will return the same Cache-Control header.
+    command: -enable-url-source -http-read-timeout 10 -http-cache-ttl 0
+    restart: always

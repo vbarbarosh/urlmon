@@ -29,6 +29,14 @@ class Artifact extends Model
 {
     use HasFactory, Cast, Q;
 
+    const TYPE_IMAGES = [
+        'image/png',
+        'image/gif',
+        'image/svg+xml',
+        'image/jpeg',
+        'image/jpeg',
+    ];
+
     protected $hidden = [
         'id',
         'target_id',

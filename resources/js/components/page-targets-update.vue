@@ -60,6 +60,8 @@
                 this.$router.back();
             },
             click_parse: async function () {
+                await blocking(api_targets_patch({target: this.target}));
+                await blocking(this.refresh());
                 await blocking(api_targets_parse({target: this.target}));
                 await blocking(this.refresh());
             },

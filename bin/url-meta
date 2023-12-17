@@ -29,24 +29,31 @@ async function main()
     created_at: document.querySelector('.age').title,
 }
     `;
-
-    const options = {headless: 'new'};
-    if (process.env.PROXY) {
+    const options = JSON.parse(process.argv[4] || '[]');
+    options.setViewport = {width: 1280, height: 1024};
+    // options.setCookie = []; // [];
+    options.setCookie = [
+    ];
+    options.goto = {waitUntil: 'domcontentloaded'};
+    options.screenshot = {fullPage: true};
+    const browser = await puppeteer.launch({
+        headless: 'new',
         // https://stackoverflow.com/a/52778119
-        options.args = [`--proxy-server=${process.env.PROXY}`];
-    }
+        args: process.env.PROXY ? [`--proxy-server=${process.env.PROXY}`] : undefined,
+    });
 
-    const browser = await puppeteer.launch(options);
     user_friendly_status('Preparing...');
     try {
         const page = puppeteer_log(await browser.newPage(), log);
         // const page = await browser.newPage();
-        await page.setViewport({width: 1280, height: 1024});
+        await page.setViewport(options.setViewport);
+        await page.setCookie(...options.setCookie);
+        await page.setDefaultNavigationTimeout(30000);
         user_friendly_status(`Opening ${url}...`);
         let out = null;
         for (let attempt = 1; !out && attempt < 20; ++attempt) {
             try {
-                const meta = await url_meta(page, url, js);
+                const meta = await url_meta(page, url, js, options);
                 out = {url, ...meta};
             }
             catch (error) {
@@ -59,7 +66,7 @@ async function main()
                     continue;
                 }
                 try {
-                    const meta = await url_meta(page, url, js);
+                    const meta = await url_meta(page, url, js, options);
                     out = {url, ...meta};
                 }
                 catch (error2) {
@@ -80,13 +87,36 @@ async function main()
     user_friendly_status('Done');
 }
 
-async function url_meta(page, url, js)
+async function url_meta(page, url, js, options)
 {
-    const response = await page.goto(url, {waitUntil: 'domcontentloaded'});
+    const response = await page.goto(url, {
+        // timeout: options.goto.timeout,
+        waitUntil: options.goto.waitUntil,
+        // referer: options.goto.referer,
+        // referrerPolicy: options.goto.referrerPolicy,
+        // timeout: options.goto.timeout,
+        // waitUntil: options.goto.waitUntil,
+    });
     if (response.status() >= 400) {
         throw new Error(`Page load failed: ${response.status()} ${response.statusText()}`);
     }
-    await page.screenshot({path: 'a.png', fullPage: true});
+    await page.screenshot({
+        path: 'a.png',
+        fullPage: true,
+        // fullPage: options.screenshot.fullPage,
+        // omitBackground: options.screenshot.omitBackground,
+        // optimizeForSpeed: options.screenshot.optimizeForSpeed,
+        // quality: options.screenshot.quality,
+        // type: options.screenshot.type,
+        // captureBeyondViewport: options.screenshot.captureBeyondViewport,
+        // clip: {
+        //     x: options.screenshot.clip.x,
+        //     y: options.screenshot.clip.y,
+        //     width: options.screenshot.clip.width,
+        //     height: options.screenshot.clip.height,
+        //     scale: options.screenshot.clip.scale,
+        // },
+    });
     return await page.evaluate(render_js());
     // allow the following expressions:
     // - new Promise(resolve => setTimeout(resolve.bind(null, 1), 100))

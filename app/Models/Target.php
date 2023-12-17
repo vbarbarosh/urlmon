@@ -26,6 +26,8 @@ use Illuminate\Support\Collection;
  * @property Carbon $updated_at
  * @property Parser $parser
  * @property EloquentCollection|Artifact[] $artifacts
+ * @property TargetVersion $latest
+ * @property TargetVersion|TargetVersion[] $versions
  * @property $artifacts_count
  */
 class Target extends Model
@@ -44,13 +46,18 @@ class Target extends Model
     {
         $r = ['parser'];
         $c = ['artifacts'];
-        return $query->with($r)->withCount($c)->get()->map(function (Target $target) {
+        $targets = $query->with($r)->withCount($c)->get();
+        $artifacts = Artifact::query()->whereIn('type', Artifact::TYPE_IMAGES)->whereIn('target_id', $targets->pluck('id'))->get()->groupBy('target_id');
+        $expires_at = now()->addHour();
+        return $targets->map(function (Target $target) use ($artifacts, $expires_at) {
             return new FrontendArray($target->id, [
                 'uid' => $target->uid,
                 'parser_uid' => $target->parser->uid ?? null,
                 'label' => $target->label,
                 'url' => $target->url,
-                // 'meta' => $target->meta,
+                'images' => empty($artifacts[$target->id]) ? [] : $artifacts[$target->id]->map(function (Artifact $artifact) use ($expires_at) {
+                    return ['url' => s3_sign_get($artifact->url, $expires_at), 'width' => $artifact->meta['width'], 'height' => $artifact->meta['height']];
+                }),
                 'artifacts_count' => $target->artifacts_count,
                 'created_at' => $target->created_at->toAtomString(),
                 'updated_at' => $target->updated_at->toAtomString(),
@@ -130,6 +137,16 @@ class Target extends Model
         return $this->belongsTo(Parser::class);
     }
 
+    public function latest()
+    {
+        return $this->belongsTo(TargetVersion::class, 'latest_version_id');
+    }
+
+    public function versions()
+    {
+        return $this->hasMany(TargetVersion::class);
+    }
+
     public function artifacts()
     {
         return $this->hasMany(Artifact::class);
@@ -166,6 +183,14 @@ class Target extends Model
         $artifact->name = $name;
         $artifact->url = s3_files_url(sprintf('%s/%s', $artifact->uid, $artifact->name));
         $artifact->size = filesize($file);
+        $artifact->type = mime_from_pathname($file);
+        $tmp = getimagesize($file);
+        if ($tmp) {
+            $artifact->meta = [
+                'width' => $tmp[0],
+                'height' => $tmp[1],
+            ];
+        }
         s3_put_object($artifact->url, ['SourceFile' => $file, 'ACL' => S3_ACL_PRIVATE]);
         $artifact->save();
     }
@@ -177,6 +202,7 @@ class Target extends Model
         $artifact->name = $name;
         $artifact->url = s3_files_url(sprintf('%s/%s', $artifact->uid, $artifact->name));
         $artifact->size = strlen($body);
+        $artifact->type = mime_from_pathname($name);
         s3_put_object($artifact->url, ['Body' => $body, 'ACL' => S3_ACL_PRIVATE]);
         $artifact->save();
     }

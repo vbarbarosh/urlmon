@@ -1,10 +1,16 @@
 <?php
 
+use App\Exceptions\S3BatchDownloadFailed;
+use Aws\CommandPool;
 use Aws\Credentials\Credentials;
 use Aws\Result as AwsResult;
+use Aws\ResultInterface;
 use Aws\S3\S3Client;
 use Carbon\Carbon;
 use GuzzleHttp\Psr7\Stream as GuzzleStream;
+
+// For `50` see issues/guzzle_each_promise.php
+define('S3_BATCH_CONCURRENCY', 10);
 
 define('S3_CACHE_10MIN', 'public, max-age=600, s-maxage=600');
 define('S3_REVALIDATE', 'public, max-age=0, s-maxage=1200');
@@ -13,6 +19,61 @@ define('S3_NOCACHE', 'private, max-age=0, no-cache');
 
 define('S3_ACL_PUBLIC_READ', 'public-read');
 define('S3_ACL_PRIVATE', 'private');
+
+function batch_download($items): void
+{
+    $target_files = [];
+    foreach ($items as $item) {
+        // ignore items without url or target_file
+        if (empty($item['url']) || empty($item['target_file'])) {
+            continue;
+        }
+        $target_files[$item['url']][] = $item['target_file'];
+    }
+    foreach (s3_group(array_keys($target_files)) as $group) {
+        // Download using file_get_contents
+        if ($group['client'] === null) {
+            foreach ($group['urls'] as $url) {
+                if (preg_match('!^data:\w+/\w+;base64,!', $url)) {
+                    $body = file_get_contents($url);
+                }
+                else if (preg_match('!^https?://!', $url)) {
+                    $body = http_get_contents($url);
+                }
+                else {
+                    throw new Exception("Invalid url: $url");
+                }
+                foreach ($target_files[$url] as $target_file) {
+                    file_put_contents($target_file, $body);
+                }
+            }
+            continue;
+        }
+        // Download using S3 API
+        $s3_client = $group['client'];
+        $errors = [];
+        $commands = [];
+        foreach ($group['urls'] as $url) {
+            $commands[] = $s3_client->getCommand('GetObject', s3_parse($url));
+        }
+        $pool = new CommandPool($s3_client, $commands, [
+            'concurrency' => S3_BATCH_CONCURRENCY,
+            'fulfilled' => function (ResultInterface $response, $index) use ($group, $target_files) {
+                $url = $group['urls'][$index];
+                foreach ($target_files[$url] as $target_file) {
+                    file_put_contents($target_file, strval($response->get('Body')));
+                }
+            },
+            'rejected' => function ($error, $index) use (&$errors, $group) {
+                $errors[] = ['error' => $error, 'url' => $group['urls'][$index]];
+            }
+        ]);
+        $pool->promise()->wait();
+        if (count($errors)) {
+            throw new S3BatchDownloadFailed($errors);
+        }
+    }
+}
 
 function s3_group(array $urls): array
 {
