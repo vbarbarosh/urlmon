@@ -73,10 +73,13 @@
             };
         },
         watch: {
-            'modelValue.meta': function () {
-                this.$nextTick(function () {
-                    autosize.update(this.$refs.textarea);
-                });
+            'modelValue.meta': {
+                immediate: true,
+                handler: function () {
+                    this.$nextTick(function () {
+                        autosize.update(this.$refs.textarea);
+                    });
+                },
             },
         },
         created: function () {
