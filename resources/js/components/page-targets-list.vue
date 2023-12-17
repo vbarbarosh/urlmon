@@ -28,22 +28,6 @@
                         </div>
                         <div class="fluid flex-row-center flex-justify-end oh">
                             <vue3-picture-swipe v-bind:items="render_item_images(item)" v-bind:options="{shareEl: false}" class="vue3-picture-swipe" />
-<!--
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/036d748bb756d5839ee1b93bb25e75cf.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/1887da33cbe0d6778caf36670df93a54.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/1d49be0e00c587256573d7d4cac5221f.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/247eebddebd8a4bf28c2d79246674152.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/29d873a55c0beecef1ef82d529b90d6a.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/3430142204a8f7f76c93decda75dd827.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/34cef7771ad2f7b02b7467ca5fab4e83.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/3c6a0eae5cf6b0179e9cdaff7e2e77e6.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/436d9b46a7bd75e4c3085277ed919375.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/52afd736d5494935c20e22a3c7604521.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/5613e03d5fa3cebe05bd40da8163645c.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/85880c50722b913ee79c2cb67a9f5df3.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/c36e7d60fb99b0bbe37405d2e375d705.jpg" class="max-h40" alt="">
-                            <img src="https://i.simpalsmedia.com/999.md/BoardImages/900x900/ffba1c5ff51faf6b1c984d2d959d6440.jpg" class="max-h40" alt="">
--->
                         </div>
                     </div>
                 </td>
