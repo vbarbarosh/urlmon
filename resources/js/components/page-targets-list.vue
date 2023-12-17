@@ -26,8 +26,8 @@
                                 <div><a v-bind:href="item.url" target="_blank">{{ item.url }}</a></div>
                             </template>
                         </div>
-                        <div class="fluid flex-row-center flex-justify-end oh">
-                            <vue3-picture-swipe v-bind:items="render_item_images(item)" v-bind:options="{shareEl: false}" class="vue3-picture-swipe" />
+                        <div class="fluid rel oh">
+                            <vue3-picture-swipe v-bind:items="render_item_images(item)" v-bind:options="{shareEl: false}" class="abs-r vue3-picture-swipe" />
                         </div>
                     </div>
                 </td>
